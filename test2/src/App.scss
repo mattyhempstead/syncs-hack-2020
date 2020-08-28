@@ -1,0 +1,21 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  width: 100vw;
+  color: rgb(0, 0, 0);
+  font-family: "Courier New", Courier, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.App {
+  position: fixed;
+  height: 100vh;
+  width: 100vw;
+  background-color: rgb(154, 209, 223);
+  text-align: center;
+}

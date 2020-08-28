@@ -1,0 +1,22 @@
+@use "@material/floating-label/mdc-floating-label";
+@use "@material/line-ripple/mdc-line-ripple";
+@use "@material/notched-outline/mdc-notched-outline";
+@use "@material/textfield";
+
+@include textfield.core-styles;
+
+p {
+  font-size: xx-large;
+}
+
+.Main {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: 1fr 1fr 1fr;
+  align-items: center;
+  color: black;
+}
+
+.mdc-text-field {
+  width: 50vw;
+}
