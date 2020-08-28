@@ -76,6 +76,8 @@ function init() {
     var gainNode4 = audioCtx.createGain();
 
     var merger = audioCtx.createChannelMerger(4);
+    var num_output_channels = 10;
+    var splitter = audioCtx.createChannelSplitter(num_output_channels);
 
     document.getElementById("vol1").value = 1;
     document.getElementById("freq1").value = 200;
@@ -104,8 +106,10 @@ function init() {
     oscillator4.frequency.setValueAtTime(document.getElementById("freq4").value, audioCtx.currentTime);
     gainNode4.gain.setValueAtTime(document.getElementById("vol4").value/1000, audioCtx.currentTime);
 
-    merger.connect(audioCtx.destination);
-    merger.connect(audioCtx.destination);
+    merger.connect(splitter);
+    for (let i = 0; i < num_output_channels; i++) {
+        splitter.connect(audioCtx.destination, i);
+    }
     oscillator1.start();
     oscillator2.start();
     oscillator3.start();
