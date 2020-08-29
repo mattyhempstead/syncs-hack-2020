@@ -1,26 +1,67 @@
 var audioContext;
 var analyserNode;
 
+const FREQUENCY_BUCKETS = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500];
+const FREQUENCY_TOLERANCE = 15;
+const INTENSITY_THRESHOLD = 150;
+
 var bufferLength;
 var dataArray;
 
+let binWidth;
 let timer = 0;
-let framerate = 600;
+let framerate = 60;
+let sampleRate = audioContext.sampleRate;
 // interval at which to log data (divide by frame rate to get seconds)
-let timerInterval = 600;
+let timerInterval = 60;
 // intensity at which a frequency is considered relevant
-let intensityThreshold = 150;
 let started = false;
+
+let freqs = [];
+
+let bandWidth = sampleRate / bufferLength;
+
+for (let i = 0; i < bufferLength; i++) {
+  freqs.push((i * bandWidth) / 2);
+}
+
+const decodeBits = () => {
+  let frequencyHeard = [];
+
+  for (let i in dataArray) {
+    if (dataArray[i] > INTENSITY_THRESHOLD) {
+      frequencyHeard.push(freqs[i]);
+    }
+  }
+
+  let bitArray = [];
+
+  for (let i of frequencyHeard) {
+    for (let j = 0; j < FREQUENCY_BUCKETS.length; j++) {
+      if (bitArray.includes(FREQUENCY_BUCKETS[j])) continue;
+      if (Math.abs(i - FREQUENCY_BUCKETS[j]) < FREQUENCY_TOLERANCE) {
+        bitArray.push(FREQUENCY_BUCKETS[j]);
+      }
+    }
+  }
+
+  let finalInt = 0;
+  for (let i of bitArray) {
+    finalInt += 2 ** FREQUENCY_BUCKETS.indexOf(i);
+    //finalInt += frequencyMap[i]
+  }
+
+  return finalInt;
+};
 
 const sketch = (p) => {
   let screenWidth = window.innerWidth;
-  //   let screenWidth = 250;
-  //   let binWidth = screenWidth / dlen;
-
   p.setup = () => {
     p.createCanvas(screenWidth, screenWidth * 2.5);
     p.frameRate(framerate);
     p.loop();
+
+    binWidth = screenWidth / dataArray.length;
   };
 
   let t = 0;
@@ -31,9 +72,15 @@ const sketch = (p) => {
     if (!started) return;
     timer++;
     analyserNode.getByteFrequencyData(dataArray);
+    dataArray.map((i) => i ** 2);
+
+    console.log(decodeBits());
+    //console.log('data', dataArray);
+    //let index = dataArray.indexOf(Math.max(...dataArray));
+    //console.log(freqs[index]);
 
     for (let i in dataArray) {
-      if (dataArray[i] > intensityThreshold) {
+      if (dataArray[i] > INTENSITY_THRESHOLD) {
         // console.log(i);
       }
     }
@@ -91,67 +138,71 @@ const sketch = (p) => {
     // p.stroke("rgba(0,0,0)");
     p.circle(xc, yc, 2 * r);
 
-    if (timer % timerInterval === 0) {
-      console.log(dataArray);
+    //  if (timer % timerInterval === 0) {
+    //     let signal = decodeBits()
+    //     console.log(signal)
+    //     // uncomment to console log most prominent frequency
+    //     ///let index = dataArray.indexOf(Math.max(...dataArray))
+    //     // console.log(freqs[index])
+    //   }
+
+    p.fill("black");
+
+    for (let i = 0; i < dataArray.length; i++) {
+      p.rect(i * binWidth, 600 - dataArray[i] * 2, binWidth, dataArray[i] * 2);
     }
+  };
+
+  const onStream = (stream) => {
+    var inputPoint = audioContext.createGain();
+    // Create an AudioNode from the stream
+    var realAudioInput = audioContext.createMediaStreamSource(stream);
+    var audioInput = realAudioInput;
+    audioInput.connect(inputPoint);
+    inputPoint.connect(analyserNode);
+
+    // start drawing
+    started = true;
   };
 
   // all the stupid browser compatability stuff
   //    this is the part i yoinked from somewhere online
+  const initAudio = () => {
+    if (!navigator.getUserMedia)
+      navigator.getUserMedia =
+        navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    if (!navigator.cancelAnimationFrame)
+      navigator.cancelAnimationFrame =
+        navigator.webkitCancelAnimationFrame ||
+        navigator.mozCancelAnimationFrame;
+    if (!navigator.requestAnimationFrame)
+      navigator.requestAnimationFrame =
+        navigator.webkitRequestAnimationFrame ||
+        navigator.mozRequestAnimationFrame;
 
-  // initAudio();
-};
-
-const onStream = (stream) => {
-  var inputPoint = audioContext.createGain();
-  // Create an AudioNode from the stream
-  var realAudioInput = audioContext.createMediaStreamSource(stream);
-  var audioInput = realAudioInput;
-  audioInput.connect(inputPoint);
-  inputPoint.connect(analyserNode);
-
-  // start drawing
-  started = true;
-};
-
-export const initAudio = () => {
-  audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  analyserNode = audioContext.createAnalyser();
-
-  analyserNode.fftSize = 4096 / 2;
-
-  bufferLength = analyserNode.frequencyBinCount;
-  dataArray = new Uint8Array(bufferLength);
-
-  if (!navigator.getUserMedia)
-    navigator.getUserMedia =
-      navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  if (!navigator.cancelAnimationFrame)
-    navigator.cancelAnimationFrame =
-      navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
-  if (!navigator.requestAnimationFrame)
-    navigator.requestAnimationFrame =
-      navigator.webkitRequestAnimationFrame ||
-      navigator.mozRequestAnimationFrame;
-
-  navigator.getUserMedia(
-    {
-      audio: {
-        mandatory: {
-          googEchoCancellation: "false",
-          googAutoGainControl: "false",
-          googNoiseSuppression: "false",
-          googHighpassFilter: "false",
+    navigator.getUserMedia(
+      {
+        audio: {
+          mandatory: {
+            googEchoCancellation: "false",
+            googAutoGainControl: "false",
+            googNoiseSuppression: "false",
+            googHighpassFilter: "false",
+          },
+          optional: [],
         },
         optional: [],
       },
-    },
-    onStream,
-    function (e) {
-      alert("Couldn't connect to an audio device");
-      console.log(e);
-    }
-  );
+
+      onStream,
+      function (e) {
+        alert("Couldn't connect to an audio device");
+        console.log(e);
+      }
+    );
+  };
+
+  initAudio();
 };
 
 export default sketch;
