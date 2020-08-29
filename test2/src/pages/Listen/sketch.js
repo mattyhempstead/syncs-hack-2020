@@ -1,8 +1,6 @@
-
-const FREQUENCY_BUCKETS = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000];
+const FREQUENCY_BUCKETS = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500];
 const FREQUENCY_TOLERANCE = 15;
 const INTENSITY_THRESHOLD = 150;
-
 
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 const analyserNode = audioContext.createAnalyser();
@@ -79,7 +77,7 @@ const sketch = p => {
     analyserNode.getByteFrequencyData(dataArray);
     dataArray.map(i => i**2);
 
-    // console.log(decodeBits());
+    console.log(decodeBits());
     //console.log('data', dataArray);
     //let index = dataArray.indexOf(Math.max(...dataArray));
     //console.log(freqs[index]);
