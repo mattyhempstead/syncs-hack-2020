@@ -36,7 +36,7 @@ const sketch = (p) => {
     }
 
     for (let i = 0; i < dataArray.length; i++) {
-      p.rect(i * binWidth, 0, binWidth, dataArray[i] * 2);
+      p.rect(i * binWidth, 300 - dataArray[i] * 2, binWidth, dataArray[i] * 2);
     }
 
     if (timer % timerInterval === 0) {
