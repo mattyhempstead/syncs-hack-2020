@@ -5,6 +5,10 @@ import "./index.scss";
 import FormInput from "../../components/FormInput";
 import Button from "../../components/Button";
 
+const play = () => {
+  console.log("play");
+};
+
 const Main = () => {
   return (
     <div className="Main">
@@ -18,7 +22,7 @@ const Main = () => {
           className="play-button"
           message="play"
           icon="play_arrow"
-          onClick={(e) => console.log("hi")}
+          onClick={(e) => play()}
           color="red"
         />
       </div>
@@ -30,7 +34,6 @@ const Main = () => {
             className="listen-button"
             message="listen"
             icon="mic"
-            onClick={(e) => console.log("ho")}
             color="green"
           />
         </Link>
