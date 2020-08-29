@@ -1,10 +1,8 @@
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-const analyserNode = audioContext.createAnalyser();
+var audioContext;
+var analyserNode;
 
-analyserNode.fftSize = 4096 / 2;
-
-const bufferLength = analyserNode.frequencyBinCount;
-const dataArray = new Uint8Array(bufferLength);
+var bufferLength;
+var dataArray;
 
 let timer = 0;
 let framerate = 600;
@@ -99,6 +97,14 @@ const onStream = (stream) => {
 };
 
 export const initAudio = () => {
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  analyserNode = audioContext.createAnalyser();
+
+  analyserNode.fftSize = 4096 / 2;
+
+  bufferLength = analyserNode.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
+
   if (!navigator.getUserMedia)
     navigator.getUserMedia =
       navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
