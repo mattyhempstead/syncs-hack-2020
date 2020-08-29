@@ -4,9 +4,10 @@
     https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode/frequency
 */
 
-const TONE_DURATION = 0.05; // Seconds for each 8-bit tone to be played
+const TONE_DURATION = 1; // Seconds for each 8-bit tone to be played
 // const FREQUENCIES = [110, 220, 330, 440, 550, 660, 770, 880]; //Frequencies for each bit
-const FREQUENCIES = [210, 212, 214, 216, 218, 220, 222, 224]; //Frequencies for each bit
+//const FREQUENCIES = [210, 212, 214, 216, 218, 220, 222, 224]; //Frequencies for each bit
+const FREQUENCIES = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500]
 const TONE_VOL = 3;
 
 var audioCtx;
