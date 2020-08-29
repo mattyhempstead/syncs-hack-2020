@@ -104,7 +104,8 @@ const sketch = (p) => {
     timer++;
     analyserNode.getByteFrequencyData(dataArray);
     dataArray.map((i) => i ** 2);
-
+    decode_message(decodeBits())
+    
     //console.log(decodeBits());
     //console.log('data', dataArray);
     //let index = dataArray.indexOf(Math.max(...dataArray));
