@@ -1,12 +1,11 @@
-.Listen {
+.About {
   display: grid;
   margin-top: 2em;
   height: 100vh;
-  grid-template-rows: 5em 1fr 1fr;
+  grid-template-rows: 5em 1fr 0.5fr;
   grid-template-columns: 5em 1fr 5em;
   align-items: center;
   color: black;
-  /* // color: rgb(148, 69, 69); */
 }
 
 .back-button {
@@ -24,9 +23,10 @@
   grid-row-start: 1;
 }
 
-.plot {
-  padding-top: 5em;
+.about-text {
+  font-size: xx-large;
   grid-column-start: 1;
   grid-column-end: 4;
   grid-row-start: 2;
+  padding: 1em 2em 0 2em;
 }

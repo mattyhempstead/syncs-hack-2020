@@ -1,6 +1,9 @@
 button {
   padding: 0.1em 0.5em 0.1em 0.5em;
 }
+button:hover {
+  cursor: pointer;
+}
 
 .custom-button-red {
   background-color: #f0acac;

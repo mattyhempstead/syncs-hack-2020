@@ -5,11 +5,11 @@ import sketch from "./sketch";
 import P5Wrapper from "react-p5-wrapper";
 
 const stop = () => {
-  console.log("stop");
+  // console.log("stop");
 };
 
 const start = () => {
-  console.log("start");
+  // console.log("start");
 };
 
 const Listen = () => {

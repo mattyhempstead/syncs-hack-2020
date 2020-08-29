@@ -12,5 +12,6 @@ h1 {
 }
 
 p {
-  font-size: larger;
+  font-size: x-large;
+  padding-bottom: 0.5em;
 }
