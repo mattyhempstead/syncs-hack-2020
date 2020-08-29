@@ -155,6 +155,7 @@ const sketch = (p) => {
         p.beginShape();
         // p.noFill();
         p.fill(p.lerpColor(c1, c2, Math.sin(Math.PI * t) ** 2));
+        let first = {x: 0, y: 0}
         for (let i = 0; i < dlen + 10; i = i + 8) {
             let h =
                 i < dlen / 2
@@ -164,12 +165,15 @@ const sketch = (p) => {
             //     p.stroke(`rgba(86, 151, 95,${1 - i / dlen})`);
             // + Math.exp(-Math.sin(2 * Math.PI * t) ^ 2) * r * 0.1,
             //     let off = Math.cos((6 * Math.PI * i * t) / dlen) * r * 0.1;
+            if (i === 0) first = {x: xc + (r + h * 0.75) * Math.cos(theta), y: yc + (r + h * 0.75) * Math.sin(theta)} 
             p.curveVertex(
                 xc + (r + h * 0.75) * Math.cos(theta),
                 yc + (r + h * 0.75) * Math.sin(theta)
             );
         }
-        p.endShape();
+        
+        p.curveVertex(first.x, first.y);
+        p.endShape(p.CLOSE);
 
         p.fill("rgb(0, 0, 0)");
         // p.stroke("rgba(0,0,0)");
@@ -289,7 +293,7 @@ const decode_message = (n) => {
     pastTime = new Date();
     if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
     if (sample_time_buffer.length > UNIT_LENGTH) sample_time_buffer.shift();
-    console.log(state, sample_buffer.join());
+    //console.log(state, sample_buffer.join());
     //console.log(new Date() - pastTime);
 
     if (state === 1) {
@@ -340,13 +344,13 @@ const decode_message = (n) => {
             sample_time_buffer = []
             counter++;
             if (counter === length) {
-                console.log("MESSAGE RECEIVED:");
-                console.log("Length:");
-                console.log(length);
-                console.log("Payload:");
-                console.log(unit_buffer);
+                //console.log("MESSAGE RECEIVED:");
+                //console.log("Length:");
+                //console.log(length);
+                //console.log("Payload:");
+                //console.log(unit_buffer);
                 for (code of unit_buffer) {
-                    console.log(String.fromCharCode(code));
+                    //console.log(String.fromCharCode(code));
                 }
                 restart_state_machine();
             }
@@ -394,7 +398,7 @@ const get_sample_buffer_value = (buff, time_buff) => {
     }
 
     if (seen_values[current_max] >= HEADER_THRESHOLD) {
-        console.log(seen_values[current_max]);
+        //console.log(seen_values[current_max]);
         return current_max;
     } else {
         return -1;
