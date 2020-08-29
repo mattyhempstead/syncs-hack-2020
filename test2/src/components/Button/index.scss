@@ -1,5 +1,5 @@
 @use "@material/theme" with (
-  $primary: #f07474,
+  $primary: #f0acac,
   $on-primary: #eb5e6a
 );
 
@@ -7,6 +7,13 @@
 
 @include button.core-styles;
 
-.custom-button {
-  @include button.ink-color(#000000);
+.custom-button-red {
+  @include button.ink-color(#721d1d);
+  font-size: 2rem;
+}
+
+.custom-button-green {
+  --mdc-theme-primary: #c7f0ac;
+  @include button.ink-color(#3c473c);
+  font-size: 2rem;
 }

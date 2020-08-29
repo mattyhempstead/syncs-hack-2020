@@ -10,31 +10,39 @@ const Main = () => {
     <div className="Main">
       <div></div>
       <div>
-        <h1> send: </h1>
+        <h1> 1. send </h1>
         <div>
           <FormInput />
         </div>
         <Button
+          className="play-button"
           message="play"
           icon="play_arrow"
           onClick={(e) => console.log("hi")}
+          color="red"
         />
       </div>
       <div>
-        <h1> receive: </h1>
+        <h1> 2. receive </h1>
         <br></br>
-        <Link to="/listen" class="link">
+        <Link to="/listen" className="link">
           <Button
+            className="listen-button"
             message="listen"
             icon="mic"
             onClick={(e) => console.log("ho")}
+            color="green"
           />
         </Link>
       </div>
       <div></div>
       <div>
         <p>
-          Created by <a href="https://www.benbraham.com">leprachauns</a>.
+          Created by{" "}
+          <a href="https://github.com/mattyhempstead/syncs-hack-2020/tree/master">
+            leprachauns
+          </a>
+          .
         </p>
       </div>
     </div>
