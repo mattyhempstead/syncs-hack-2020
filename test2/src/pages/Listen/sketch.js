@@ -52,23 +52,43 @@ const decodeBits = () => {
 
 const sketch = (p) => {
   let screenWidth = window.innerWidth;
+  let xc = screenWidth / 2;
+  let yc = 250;
+  let r = screenWidth > 400 ? 64 : screenWidth / (2 * Math.PI);
+
   p.setup = () => {
     p.createCanvas(screenWidth, screenWidth * 2.5);
     p.frameRate(framerate);
     p.loop();
   };
 
+  p.mouseClicked = () => {
+    if ((p.mouseX - xc) ** 2 + (p.mouseY - yc) ** 2 <= r ** 2) {
+      initAudio();
+    }
+  };
+
   let t = 0;
 
   p.draw = () => {
-    t -= 0.01;
     p.background("rgb(154, 209, 223)");
-    if (!started) return;
+    if (!started) {
+      p.fill("rgb(255, 255, 255)");
+      p.circle(xc, yc, 2 * r);
+      p.textSize(32);
+      p.fill("rgb(0, 0, 0)");
+      p.textAlign(p.CENTER, p.CENTER);
+      p.textFont("Amatic SC", 50);
+      p.text("start", xc, yc);
+      return;
+    }
+    let dlen = dataArray.length;
+    t -= 0.01;
     timer++;
     analyserNode.getByteFrequencyData(dataArray);
     dataArray.map((i) => i ** 2);
 
-    console.log(decodeBits());
+    // console.log(decodeBits());
     //console.log('data', dataArray);
     //let index = dataArray.indexOf(Math.max(...dataArray));
     //console.log(freqs[index]);
@@ -79,7 +99,6 @@ const sketch = (p) => {
       }
     }
 
-    let dlen = dataArray.length;
     // for (let i = 0; i < dlen; i++) {
     //   p.rect(i * binWidth, 300 - dataArray[i] * 2, binWidth, dataArray[i] * 2);
     // }
@@ -89,10 +108,6 @@ const sketch = (p) => {
     let c2 = p.color(148, 69, 69);
     // let c1 = p.color(0, 0, 0);
     // let c2 = p.color(255, 255, 255);
-
-    let xc = screenWidth / 2;
-    let yc = 250;
-    let r = screenWidth > 400 ? 64 : screenWidth / (2 * Math.PI);
 
     // for (let i = 2; i < dlen; i = i + 9) {
     //   let h = i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen - i] * 0.75;
