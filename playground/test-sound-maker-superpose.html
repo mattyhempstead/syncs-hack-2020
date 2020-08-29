@@ -1,0 +1,159 @@
+<html>
+<head>
+<title>Test output sine wave</title>
+<style>
+.slider {
+    background: #d3d3d3;
+    width: 80%;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+</style>
+</head>
+
+
+
+<body>
+    <input type="button" value="CLICK ME (to load audio player)" onclick="init();">
+    These generates a sine wave of the following frequency:
+    slider1
+    <div class="slidecontainer1">
+        freq: <input type="range" min="1" max="2000" value="100" class="slider" id="freq1">
+    <p id="freq-display1">200</p>
+        vol: <input type="range" min="0" max="200" value="1" class="slider" id="vol1">
+    <p id="vol-display1">1</p>
+    </div>
+    slider2
+    <div class="slidecontainer2">
+        freq: <input type="range" min="1" max="2000" value="100" class="slider" id="freq2">
+    <p id="freq-display2">200</p>
+        vol: <input type="range" min="0" max="200" value="1" class="slider" id="vol2">
+    <p id="vol-display2">1</p>
+    slider3
+    <div class="slidecontainer3">
+        freq: <input type="range" min="1" max="2000" value="100" class="slider" id="freq3">
+    <p id="freq-display3">200</p>
+        vol: <input type="range" min="0" max="200" value="1" class="slider" id="vol3">
+    <p id="vol-display3">1</p>
+    slider4
+    <div class="slidecontainer4">
+        freq: <input type="range" min="1" max="2000" value="100" class="slider" id="freq4">
+    <p id="freq-display4">200</p>
+        vol: <input type="range" min="0" max="200" value="1" class="slider" id="vol4">
+    <p id="vol-display4">1</p>
+<script>
+/*
+    see https://github.com/mdn/violent-theremin/blob/gh-pages/scripts/app.js
+    https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Basic_concepts_behind_Web_Audio_API#Audio_data_whats_in_a_sample
+    https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode/frequency
+*/
+
+
+function init() {
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    var audioCtx = new AudioContext();
+
+    var oscillator1 = audioCtx.createOscillator();
+    var gainNode1 = audioCtx.createGain();
+    var oscillator2 = audioCtx.createOscillator();
+    var gainNode2 = audioCtx.createGain();
+    var oscillator3 = audioCtx.createOscillator();
+    var gainNode3 = audioCtx.createGain();
+    var oscillator4 = audioCtx.createOscillator();
+    var gainNode4 = audioCtx.createGain();
+
+    var merger = audioCtx.createChannelMerger(4);
+    var num_output_channels = 10;
+    var splitter = audioCtx.createChannelSplitter(num_output_channels);
+
+    document.getElementById("vol1").value = 1;
+    document.getElementById("freq1").value = 200;
+    document.getElementById("vol2").value = 1;
+    document.getElementById("freq2").value = 200;
+    document.getElementById("vol3").value = 1;
+    document.getElementById("freq3").value = 200;
+    document.getElementById("vol4").value = 1;
+    document.getElementById("freq4").value = 200;
+
+    oscillator1.connect(gainNode1);
+    gainNode1.connect(merger);
+    oscillator2.connect(gainNode2);
+    gainNode2.connect(merger);
+    oscillator3.connect(gainNode3);
+    gainNode3.connect(merger);
+    oscillator4.connect(gainNode4);
+    gainNode4.connect(merger);
+
+    oscillator1.frequency.setValueAtTime(document.getElementById("freq1").value, audioCtx.currentTime);
+    gainNode1.gain.setValueAtTime(document.getElementById("vol1").value/1000, audioCtx.currentTime);
+    oscillator2.frequency.setValueAtTime(document.getElementById("freq2").value, audioCtx.currentTime);
+    gainNode2.gain.setValueAtTime(document.getElementById("vol2").value/1000, audioCtx.currentTime);
+    oscillator3.frequency.setValueAtTime(document.getElementById("freq3").value, audioCtx.currentTime);
+    gainNode3.gain.setValueAtTime(document.getElementById("vol3").value/1000, audioCtx.currentTime);
+    oscillator4.frequency.setValueAtTime(document.getElementById("freq4").value, audioCtx.currentTime);
+    gainNode4.gain.setValueAtTime(document.getElementById("vol4").value/1000, audioCtx.currentTime);
+
+    merger.connect(splitter);
+    for (let i = 0; i < num_output_channels; i++) {
+        splitter.connect(audioCtx.destination, i);
+    }
+    oscillator1.start();
+    oscillator2.start();
+    oscillator3.start();
+    oscillator4.start();
+
+    document.getElementById("freq1").oninput = function() {
+        document.getElementById("freq-display1").innerHTML = this.value;
+        oscillator1.frequency.setValueAtTime(document.getElementById("freq1").value, audioCtx.currentTime);
+    }
+
+    document.getElementById("vol1").oninput = function() {
+        document.getElementById("vol-display1").innerHTML = this.value;
+        gainNode1.gain.setValueAtTime(document.getElementById("vol1").value/1000, audioCtx.currentTime);
+    }
+
+    document.getElementById("freq2").oninput = function() {
+        document.getElementById("freq-display2").innerHTML = this.value;
+        oscillator2.frequency.setValueAtTime(document.getElementById("freq2").value, audioCtx.currentTime);
+    }
+
+    document.getElementById("vol2").oninput = function() {
+        document.getElementById("vol-display2").innerHTML = this.value;
+        gainNode2.gain.setValueAtTime(document.getElementById("vol2").value/1000, audioCtx.currentTime);
+    }
+
+    document.getElementById("freq3").oninput = function() {
+        document.getElementById("freq-display3").innerHTML = this.value;
+        oscillator3.frequency.setValueAtTime(document.getElementById("freq3").value, audioCtx.currentTime);
+    }
+
+    document.getElementById("vol3").oninput = function() {
+        document.getElementById("vol-display3").innerHTML = this.value;
+        gainNode3.gain.setValueAtTime(document.getElementById("vol3").value/1000, audioCtx.currentTime);
+    }
+
+    document.getElementById("freq4").oninput = function() {
+        document.getElementById("freq-display4").innerHTML = this.value;
+        oscillator4.frequency.setValueAtTime(document.getElementById("freq4").value, audioCtx.currentTime);
+    }
+
+    document.getElementById("vol4").oninput = function() {
+        document.getElementById("vol-display4").innerHTML = this.value;
+        gainNode4.gain.setValueAtTime(document.getElementById("vol4").value/1000, audioCtx.currentTime);
+    }
+}
+</script>
+</html>

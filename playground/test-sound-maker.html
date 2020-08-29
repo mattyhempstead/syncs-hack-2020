@@ -1,0 +1,71 @@
+<html>
+<head>
+<title>Test output sine wave</title>
+<style>
+.slider {
+    background: #d3d3d3;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Override default look */
+  appearance: none;
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+
+.slider::-moz-range-thumb {
+  width: 25px; /* Set a specific slider handle width */
+  height: 25px; /* Slider handle height */
+  background: #4CAF50; /* Green background */
+  cursor: pointer; /* Cursor on hover */
+}
+</style>
+</head>
+
+
+
+<body>
+    <input type="button" value="CLICK ME (to load audio player)" onclick="init();">
+    These generates a sine wave of the following frequency:
+    <div class="slidecontainer">
+        freq: <input type="range" min="1" max="2000" value="100" class="slider" id="freq">
+    <p id="freq-display">200</p>
+        vol: <input type="range" min="1" max="200" value="1" class="slider" id="vol">
+    <p id="vol-display">1</p>
+    </div>
+<script>
+/*
+    see https://github.com/mdn/violent-theremin/blob/gh-pages/scripts/app.js
+    https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Basic_concepts_behind_Web_Audio_API#Audio_data_whats_in_a_sample
+    https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode/frequency
+*/
+
+
+function init() {
+    var AudioContext = window.AudioContext || window.webkitAudioContext;
+    var audioCtx = new AudioContext();
+
+    var oscillator = audioCtx.createOscillator();
+    var gainNode = audioCtx.createGain();
+
+    document.getElementById("vol").value = 1;
+    document.getElementById("freq").value = 200;
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    oscillator.frequency.setValueAtTime(document.getElementById("freq").value, audioCtx.currentTime);
+    gainNode.gain.setValueAtTime(document.getElementById("vol").value/1000, audioCtx.currentTime);
+    oscillator.start();
+
+    document.getElementById("freq").oninput = function() {
+        document.getElementById("freq-display").innerHTML = this.value;
+        oscillator.frequency.setValueAtTime(document.getElementById("freq").value, audioCtx.currentTime);
+    }
+
+    document.getElementById("vol").oninput = function() {
+        document.getElementById("vol-display").innerHTML = this.value;
+        gainNode.gain.setValueAtTime(document.getElementById("vol").value/1000, audioCtx.currentTime);
+    }
+}
+</script>
+</html>
