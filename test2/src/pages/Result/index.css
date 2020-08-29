@@ -1,0 +1,32 @@
+.Result {
+  display: grid;
+  margin-top: 2em;
+  height: 100vh;
+  grid-template-rows: 5em 1fr 0.5fr;
+  grid-template-columns: 5em 1fr 5em;
+  align-items: center;
+  color: black;
+}
+
+.back-button {
+  border: none;
+  background-color: rgba(0, 0, 0, 0);
+  font-size: xx-large;
+}
+
+.back-button:hover {
+  cursor: pointer;
+}
+
+.title {
+  grid-column-start: 2;
+  grid-row-start: 1;
+}
+
+.redir-text {
+  font-size: xx-large;
+  grid-column-start: 1;
+  grid-column-end: 4;
+  grid-row-start: 2;
+  padding: 1em 2em 0 2em;
+}

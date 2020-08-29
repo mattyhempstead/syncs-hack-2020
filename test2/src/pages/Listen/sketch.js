@@ -38,6 +38,8 @@ let started = false;
 
 let freqs = [];
 
+let passMsg = () => {};
+
 const decodeBits = () => {
   let frequencyHeard = [];
 
@@ -80,9 +82,14 @@ const sketch = (p) => {
   };
 
   p.mouseClicked = () => {
-    if ((p.mouseX - xc) ** 2 + (p.mouseY - yc) ** 2 <= r ** 2) {
+    if ((p.mouseX - xc) ** 2 + (p.mouseY - yc) ** 2 <= r ** 2 && !started) {
+      passMsg("https://www.google.com");
       initAudio();
     }
+  };
+
+  p.myCustomRedrawAccordingToNewPropsHandler = (props) => {
+    passMsg = props.updateFunction;
   };
 
   let t = 0;
@@ -243,7 +250,7 @@ const restart_state_machine = () => {
   unit_buffer = [];
   state = 1;
   header_pos = 1;
-}
+};
 
 //States:
 //1 : Fill up buffer, search if value is first header if full
@@ -252,7 +259,7 @@ const restart_state_machine = () => {
 //4 : read message length
 //5 : read message payload
 
-const decode_message = n => {
+const decode_message = (n) => {
   // Add to buffer until its full
   sample_buffer.push(n);
   if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
@@ -272,8 +279,8 @@ const decode_message = n => {
       header_pos = 1;
       sample_buffer = [];
     }
-    if (counter === (UNIT_LENGTH - HEADER_THRESHOLD)/2) {
-        state = 3;
+    if (counter === (UNIT_LENGTH - HEADER_THRESHOLD) / 2) {
+      state = 3;
     }
   } else if (state === 3) {
     if (sample_buffer.length === UNIT_LENGTH) {
@@ -286,36 +293,36 @@ const decode_message = n => {
         }
         sample_buffer = [];
       } else {
-          state = 1;
+        state = 1;
       }
     }
   } else if (state === 4) {
     if (sample_buffer.length === UNIT_LENGTH) {
-        length = get_sample_buffer_value(sample_buffer, true);
-        state = 5;
-        counter = 0;
-        sample_buffer = [];
-     }
+      length = get_sample_buffer_value(sample_buffer, true);
+      state = 5;
+      counter = 0;
+      sample_buffer = [];
+    }
   } else if (state === 5) {
     if (sample_buffer.length === UNIT_LENGTH) {
-        unit_buffer.push(get_sample_buffer_value(sample_buffer, true));
-        sample_buffer = [];
-        counter++;
-        if (counter === length) {
-            console.log("MESSAGE RECEIVED:");
-            console.log("Length:");
-            console.log(length);
-            console.log("Payload:");
-            console.log(unit_buffer);
-            for (code of unit_buffer) {
-                console.log(String.fromCharCode(code));
-            }
-            restart_state_machine();
+      unit_buffer.push(get_sample_buffer_value(sample_buffer, true));
+      sample_buffer = [];
+      counter++;
+      if (counter === length) {
+        console.log("MESSAGE RECEIVED:");
+        console.log("Length:");
+        console.log(length);
+        console.log("Payload:");
+        console.log(unit_buffer);
+        for (code of unit_buffer) {
+          console.log(String.fromCharCode(code));
         }
+        restart_state_machine();
+      }
     }
   }
 
- /* if (sample_buffer.length == UNIT_LENGTH) {
+  /* if (sample_buffer.length == UNIT_LENGTH) {
     unit = get_sample_buffer_value(sample_buffer);
     
     if (unit !== -1) {
@@ -330,16 +337,14 @@ const decode_message = n => {
       if (found_header) throw new Error("wow idk was kinda expecting a value but ok");
     }
   }*/
-}
-
-
+};
 
 /**
  * Returns the most common number in the buffer if it is above the THRESHOLD.
  * Returns -1 if nothing above THRESHOLD
  */
 const get_sample_buffer_value = (buff, relaxed_thresh) => {
-  seen_values = {}
+  seen_values = {};
   current_max = null;
   for (value of buff) {
     if (value in seen_values) {
@@ -352,18 +357,18 @@ const get_sample_buffer_value = (buff, relaxed_thresh) => {
         }
       }
     } else {
-      seen_values[value] = 1
+      seen_values[value] = 1;
     }
   }
-  
-  if (seen_values[current_max] >= (relaxed_thresh ? RELAXED_THRESHOLD : HEADER_THRESHOLD)) {
+
+  if (
+    seen_values[current_max] >=
+    (relaxed_thresh ? RELAXED_THRESHOLD : HEADER_THRESHOLD)
+  ) {
     return current_max;
   } else {
     return -1;
   }
-  
-}
+};
 
 export default sketch;
-
-
