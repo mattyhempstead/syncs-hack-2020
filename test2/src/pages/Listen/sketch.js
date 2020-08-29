@@ -3,15 +3,23 @@ var analyserNode;
 
 const UNIT_TIME = 1000;
 const UNIT_LENGTH = 60;
-const HEADER_THRESHOLD = 40;
-const RELAXED_THRESHOLD = 40;
+const HEADER_THRESHOLD = 45;
+const RELAXED_THRESHOLD = 45;
 //const HEADER = [0b10101010, 0b01010101, 0b10101010, 0b01010101];
-const HEADER = [0b10001000, 0b01000100, 0b00100010, 0b00010001];
+// const HEADER = [0b10001000, 0b01000100, 0b00100010, 0b00010001];
 
 //const FREQUENCY_BUCKETS = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500];
-const FREQUENCY_BUCKETS = [4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750];
+// const FREQUENCY_BUCKETS = [4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400];
+const FREQUENCY_BUCKETS = [4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400, 5600, 5800, 6000, 6200, 6400];
 const FREQUENCY_TOLERANCE = 15;
-const INTENSITY_THRESHOLD = 150;
+const INTENSITY_THRESHOLD = 100;
+
+const FREQUENCY_POS = [];
+
+const HEADER = [0,1];
+let message_length = -1;
+
+const SAMPLE_RATE = 16000;
 
 var bufferLength;
 var dataArray;
@@ -24,7 +32,7 @@ let bandWidth;
 
 let sample_buffer = [];
 let unit_buffer = [];
-let state = 1;
+let state = 0;
 let header_pos = 1;
 let counter = 0;
 let length = null;
@@ -34,43 +42,110 @@ let seen_values = null;
 let current_max = null;
 let value = null;
 
-// interval at which to log data (divide by frame rate to get seconds)
-let timerInterval = 60;
 // intensity at which a frequency is considered relevant
 let started = false;
 
 let freqs = [];
 
-let passMsg = () => {};
+let fullValueBuffer = [];
+let fullDateBuffer = [];
+
+
+// const decodeBits = () => {
+//     //dataArray[1000] = 255;
+//     //dataArray[900] = INTENSITY_THRESHOLD;
+
+//     let frequencyHeard = [];
+
+//     for (let i in dataArray) {
+//         if (dataArray[i] > INTENSITY_THRESHOLD) {
+//             frequencyHeard.push(freqs[i]);
+//         }
+//     }
+
+//     let bitArray = [];
+
+//     for (let i of frequencyHeard) {
+//         for (let j = 0; j < FREQUENCY_BUCKETS.length; j++) {
+//             if (bitArray.includes(FREQUENCY_BUCKETS[j])) continue;
+//             if (Math.abs(i - FREQUENCY_BUCKETS[j]) < FREQUENCY_TOLERANCE) {
+//                 bitArray.push(FREQUENCY_BUCKETS[j]);
+//             }
+//         }
+//     }
+
+//     let finalInt = 0;
+//     for (let i of bitArray) {
+//         finalInt += 2 ** (7 - FREQUENCY_BUCKETS.indexOf(i));
+//         //finalInt += frequencyMap[i]
+//     }
+
+//     return finalInt;
+// };
+
+const avgDataArray = (start, end) => {
+    let avg = 0;
+    for (let i = start; i <= end; i++) {
+        avg += dataArray[i];
+    }
+    return avg / (end - start + 1);
+}
 
 const decodeBits = () => {
-    let frequencyHeard = [];
+    // consider freq between 3k and 8k
+    // get avg volume
+    // print?
 
-    for (let i in dataArray) {
-        if (dataArray[i] > INTENSITY_THRESHOLD) {
-            frequencyHeard.push(freqs[i]);
-        }
+    // get average volume within 5 bars
+    // get average volume within 20 bars
+    // let finalInt = 0;
+
+    // for (let i = 0; i < 8; i++) {
+    //     let nearAvg = avgDataArray(FREQUENCY_POS[i]-5, FREQUENCY_POS[i]+5);
+    //     let farAvg = avgDataArray(FREQUENCY_POS[i]-25, FREQUENCY_POS[i]+25);
+
+    //     // console.log(FREQUENCY_BUCKETS[i], nearAvg, farAvg);
+
+    //     if (nearAvg > 10 && nearAvg/farAvg > 2) {
+    //         // console.log(FREQUENCY_BUCKETS[i]);
+    //         finalInt += 2 ** (7 - i);
+    //     }
+    // }
+
+    let freqStrengths = [];    
+    for (let i = 0; i < FREQUENCY_BUCKETS.length; i++) {
+        let nearAvg = avgDataArray(FREQUENCY_POS[i]-5, FREQUENCY_POS[i]+5);
+        freqStrengths.push([i, nearAvg]);
     }
-
-    let bitArray = [];
-
-    for (let i of frequencyHeard) {
-        for (let j = 0; j < FREQUENCY_BUCKETS.length; j++) {
-            if (bitArray.includes(FREQUENCY_BUCKETS[j])) continue;
-            if (Math.abs(i - FREQUENCY_BUCKETS[j]) < FREQUENCY_TOLERANCE) {
-                bitArray.push(FREQUENCY_BUCKETS[j]);
-            }
-        }
-    }
+    freqStrengths.sort((a,b)=>{return b[1]-a[1]});
+    // console.log(freqStrengths[0][1], freqStrengths[1][1]);
 
     let finalInt = 0;
-    for (let i of bitArray) {
-        finalInt += 2 ** (7 - FREQUENCY_BUCKETS.indexOf(i));
-        //finalInt += frequencyMap[i]
+    for (let i = 0; i < 3; i++) {
+        finalInt += 2 ** (FREQUENCY_BUCKETS.length - 1 - freqStrengths[i][0]);
     }
 
+    finalInt = binary_to_int(finalInt);
+
     return finalInt;
-};
+}
+
+function num_1s(n) {
+    return n.toString(2).split('1').length-1;
+}
+
+
+function binary_to_int(n) {
+    let i = 0;
+    let num_valid_seen = 0;
+    while (i !== n) {
+        if (num_1s(i) === 3) {
+            num_valid_seen++;
+        }
+        i++;
+    }
+    return num_valid_seen;
+}
 
 const recalculateFourier = () => {
     analyserNode.getByteFrequencyData(dataArray);
@@ -191,6 +266,9 @@ const sketch = (p) => {
                 dataArray[i] * 2
             );
         }
+
+        p.rect(0, 600 - 2*INTENSITY_THRESHOLD, screenWidth, 1);
+        // p.rect(0, 0, screenWidth, 1);
     };
 };
 
@@ -216,12 +294,21 @@ export const initAudio = () => {
     bufferLength = analyserNode.frequencyBinCount;
     dataArray = new Uint8Array(bufferLength);
 
-    sampleRate = audioContext.sampleRate;
+    // sampleRate = audioContext.sampleRate;
+    // sampleRate = 16000;
+    sampleRate = SAMPLE_RATE;
     bandWidth = sampleRate / bufferLength;
 
     for (let i = 0; i < bufferLength; i++) {
         freqs.push((i * bandWidth) / 2);
     }
+
+    console.log(sampleRate, bufferLength);
+    for (let i = 0; i < FREQUENCY_BUCKETS.length; i++) {
+        FREQUENCY_POS.push(Math.round(FREQUENCY_BUCKETS[i]/(sampleRate/2) * bufferLength));
+    }
+    console.log(FREQUENCY_POS);
+
 
     if (!navigator.getUserMedia)
         navigator.getUserMedia =
@@ -271,6 +358,9 @@ const restart_state_machine = () => {
     unit_buffer = [];
     state = 1;
     header_pos = 1;
+
+    fullValueBuffer = [];
+    fullDateBuffer = [];
 };
 
 //States:
@@ -282,13 +372,53 @@ const restart_state_machine = () => {
 
 let pastTime = new Date();
 
+
+
 const decode_message = (n) => {
+    console.log(String.fromCharCode(n), n);
+    // fullValueBuffer.push(n);
+    // fullDateBuffer.push(new Date().getTime());
+    // if (fullValueBuffer.length == 1000) {
+    //     console.log(fullValueBuffer);
+    //     console.log(fullDateBuffer);
+    // }
+
+    //console.log(state, sample_buffer.join());
+
     // Add to buffer until its full
     sample_buffer.push(n);
     if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
-    console.log(state, sample_buffer.join());
     //console.log(new Date() - pastTime);
     //pastTime = new Date();
+
+
+    unit = get_sample_buffer_value(sample_buffer);
+    if (unit == -1) return;
+    sample_buffer = [];
+
+    if (state < HEADER.length) {
+        if (unit == HEADER[state]) {
+            console.log("Found header no.", state);
+            state++;
+        } else {
+            state = 0;
+        }
+    } else if (state == HEADER.length) {
+        // get length
+        message_length = unit;
+        state++;
+        console.log("Found length of ", unit);
+    } else if (state <= HEADER.length + message_length) {
+        console.log("Found char", unit, String.fromCharCode(unit));
+        state++;
+    } else {
+        console.log("DONE");
+    }
+
+
+
+    return;
+
 
     if (state === 1) {
         if (sample_buffer.length === UNIT_LENGTH) {
