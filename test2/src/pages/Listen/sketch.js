@@ -83,7 +83,7 @@ const sketch = (p) => {
 
   p.mouseClicked = () => {
     if ((p.mouseX - xc) ** 2 + (p.mouseY - yc) ** 2 <= r ** 2 && !started) {
-      passMsg("https://www.google.com");
+      // passMsg("https://www.google.com");
       initAudio();
     }
   };
@@ -111,8 +111,8 @@ const sketch = (p) => {
     timer++;
     analyserNode.getByteFrequencyData(dataArray);
     dataArray.map((i) => i ** 2);
-    decode_message(decodeBits())
-    
+    decode_message(decodeBits());
+
     //console.log(decodeBits());
     //console.log('data', dataArray);
     //let index = dataArray.indexOf(Math.max(...dataArray));
