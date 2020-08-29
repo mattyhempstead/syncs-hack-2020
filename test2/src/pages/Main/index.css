@@ -7,8 +7,15 @@ h1 {
   display: grid;
   height: 100vh;
   grid-template-rows: 1fr 1fr 1fr 1fr 3em;
+  row-gap: 2em;
   align-items: center;
   color: black;
+}
+
+@media only screen and (max-width: 600px) {
+  .Main {
+    height: 90vh;
+  }
 }
 
 p {

@@ -1,5 +1,6 @@
 button {
   padding: 0.1em 0.5em 0.1em 0.5em;
+  border-color: black;
 }
 button:hover {
   cursor: pointer;

@@ -154,9 +154,9 @@ const sketch = (p) => {
     p.beginShape();
     // p.noFill();
     p.fill(p.lerpColor(c1, c2, Math.sin(Math.PI * t) ** 2));
-    for (let i = 0; i < dlen + 10; i = i + 8) {
+    for (let i = 0; i <= dlen + 8; i = i + 8) {
       let h =
-        i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen + 10 - i] * 0.75;
+        i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen + 8 - i] * 0.75;
       let theta = -Math.PI / 2 + (2 * i * Math.PI) / dlen;
       //   p.stroke(`rgba(86, 151, 95,${1 - i / dlen})`);
       // + Math.exp(-Math.sin(2 * Math.PI * t) ^ 2) * r * 0.1,
@@ -224,28 +224,34 @@ export const initAudio = () => {
       navigator.webkitRequestAnimationFrame ||
       navigator.mozRequestAnimationFrame;
 
-  navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(stream => {
-    onStream(stream)
-  }).catch(err => {alert(err);console.log(err)})
+  navigator.mediaDevices
+    .getUserMedia({ audio: true, video: false })
+    .then((stream) => {
+      onStream(stream);
+    })
+    .catch((err) => {
+      alert(err);
+      console.log(err);
+    });
   //navigator.getUserMedia(
-    //{
-      //audio: {
-        //mandatory: {
-          //googEchoCancellation: "false",
-          //googAutoGainControl: "false",
-          //googNoiseSuppression: "false",
-          //googHighpassFilter: "false",
-        //},
-        //optional: [],
-      //},
-      //optional: [],
-    //},
-//
-    //onStream,
-    //function (e) {
-      //alert("Couldn't connect to an audio device");
-      //console.log(e);
-    //}
+  //{
+  //audio: {
+  //mandatory: {
+  //googEchoCancellation: "false",
+  //googAutoGainControl: "false",
+  //googNoiseSuppression: "false",
+  //googHighpassFilter: "false",
+  //},
+  //optional: [],
+  //},
+  //optional: [],
+  //},
+  //
+  //onStream,
+  //function (e) {
+  //alert("Couldn't connect to an audio device");
+  //console.log(e);
+  //}
   //);
 };
 
@@ -267,7 +273,7 @@ const decode_message = (n) => {
   // Add to buffer until its full
   sample_buffer.push(n);
   if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
-  console.log(state, sample_buffer.join());
+  // console.log(state, sample_buffer.join());
 
   if (state === 1) {
     if (sample_buffer.length === UNIT_LENGTH) {
@@ -312,7 +318,7 @@ const decode_message = (n) => {
       unit_buffer.push(get_sample_buffer_value(sample_buffer, true));
       sample_buffer = [];
       counter++;
-      if (counter === length) {
+      if (counter === length && false) {
         console.log("MESSAGE RECEIVED:");
         console.log("Length:");
         console.log(length);
