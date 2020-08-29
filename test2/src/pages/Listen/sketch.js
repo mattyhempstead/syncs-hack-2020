@@ -3,9 +3,9 @@ var analyserNode;
 
 const UNIT_TIME = 1000;
 const UNIT_LENGTH = 60;
-const HEADER_THRESHOLD = Math.round(0.75*UNIT_TIME);
+const HEADER_THRESHOLD = Math.round(0.50*UNIT_TIME);
 //const HEADER = [0b10101010, 0b01010101, 0b10101010, 0b01010101];
-const HEADER = [0b10001000, 0b01000100, 0b00100010, 0b00010001];
+const HEADER = [0b10001000];
 
 //const FREQUENCY_BUCKETS = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500];
 const FREQUENCY_BUCKETS = [4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750];
@@ -24,6 +24,7 @@ let bandWidth;
 let sample_buffer = [];
 let sample_time_buffer = [];
 let unit_buffer = [];
+let buf_timelength = 0;
 let state = 1;
 let header_pos = 1;
 let counter = 0;
@@ -273,6 +274,7 @@ export const initAudio = () => {
 const restart_state_machine = () => {
     sample_buffer = [];
     unit_buffer = [];
+    sample_time_buffer = [];
     state = 1;
     header_pos = 1;
 };
@@ -290,14 +292,18 @@ const decode_message = (n) => {
     // Add to buffer until its full
     sample_buffer.push(n);
     sample_time_buffer.push(new Date() - pastTime);
+    buf_timelength += sample_time_buffer[sample_time_buffer.length - 1];
     pastTime = new Date();
-    if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
-    if (sample_time_buffer.length > UNIT_LENGTH) sample_time_buffer.shift();
-    //console.log(state, sample_buffer.join());
+    if (buf_timelength >= UNIT_TIME) {
+        buf_timelength -= sample_time_buffer[0];
+        sample_buffer.shift();
+        sample_time_buffer.shift();
+    }
+    console.log(state, sample_buffer.join());
     //console.log(new Date() - pastTime);
 
     if (state === 1) {
-        if (sample_buffer.length === UNIT_LENGTH) {
+        if (buf_timelength >= UNIT_TIME) {
             unit = get_sample_buffer_value(sample_buffer, sample_time_buffer);
             if (unit === HEADER[0]) {
                 state = 2;
@@ -305,17 +311,16 @@ const decode_message = (n) => {
             }
         }
     } else if (state === 2) {
-        if (n !== HEADER[0]) {
-            state = 3;
-            header_pos = 1;
+        counter++;
+        if (counter === (5*UNIT_LENGTH*HEADER_THRESHOLD)/(UNIT_TIME*12)) {
+            state = 4;
+            counter = 0;
             sample_buffer = [];
             sample_time_buffer = [];
-        }
-        if (counter === UNIT_LENGTH - HEADER_THRESHOLD) {
-            state = 3;
+            buf_timelength = 0;
         }
     } else if (state === 3) {
-        if (sample_buffer.length === UNIT_LENGTH) {
+        if (buf_timelength >= UNIT_TIME) {
             unit = get_sample_buffer_value(sample_buffer, sample_time_buffer);
             if (unit === HEADER[header_pos]) {
                 header_pos++;
@@ -325,37 +330,44 @@ const decode_message = (n) => {
                 }
                 sample_buffer = [];
                 sample_time_buffer = [];
+                buf_timelength = 0;
             } else {
                 state = 1;
             }
         }
     } else if (state === 4) {
-        if (sample_buffer.length === UNIT_LENGTH) {
+        if (buf_timelength >= UNIT_TIME) {
             length = get_sample_buffer_value(sample_buffer, sample_time_buffer);
+            console.log("Length");
+            console.log(length)
             state = 5;
             counter = 0;
             sample_buffer = [];
             sample_time_buffer = [];
+            buf_timelength = 0;
+            if (length < 0) {
+                state = 2;
+            }
         }
     } else if (state === 5) {
-        if (sample_buffer.length === UNIT_LENGTH) {
+        if (buf_timelength >= UNIT_TIME) {
             unit_buffer.push(get_sample_buffer_value(sample_buffer, sample_time_buffer));
             sample_buffer = [];
             sample_time_buffer = []
+            buf_timelength = 0;
             counter++;
             if (counter === length) {
-                //console.log("MESSAGE RECEIVED:");
-                //console.log("Length:");
-                //console.log(length);
-                //console.log("Payload:");
-                //console.log(unit_buffer);
+                console.log("MESSAGE RECEIVED:");
+                console.log("Length:");
+                console.log(length);
+                console.log("Payload:");
+                console.log(unit_buffer);
                 for (code of unit_buffer) {
-                    //console.log(String.fromCharCode(code));
+                    console.log(String.fromCharCode(code));
                 }
                 restart_state_machine();
             }
         }
-        restart_state_machine();
     }
 };
 
@@ -397,6 +409,7 @@ const get_sample_buffer_value = (buff, time_buff) => {
         }
     }
 
+    console.log(seen_values[current_max]);
     if (seen_values[current_max] >= HEADER_THRESHOLD) {
         //console.log(seen_values[current_max]);
         return current_max;
