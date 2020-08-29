@@ -3,15 +3,12 @@ var analyserNode;
 
 const UNIT_TIME = 1000;
 const UNIT_LENGTH = 60;
-const HEADER_THRESHOLD = 45;
-const RELAXED_THRESHOLD = 45;
-//const HEADER = [0b10101010, 0b01010101, 0b10101010, 0b01010101];
-// const HEADER = [0b10001000, 0b01000100, 0b00100010, 0b00010001];
+const HEADER_THRESHOLD = 38;
+const RELAXED_THRESHOLD = 38;
 
-//const FREQUENCY_BUCKETS = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500];
 // const FREQUENCY_BUCKETS = [4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400];
 const FREQUENCY_BUCKETS = [4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400, 5600, 5800, 6000, 6200, 6400];
-const FREQUENCY_TOLERANCE = 15;
+// const FREQUENCY_BUCKETS = [3000, 3200, 3400, 3600, 3800, 4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400];
 const INTENSITY_THRESHOLD = 100;
 
 const FREQUENCY_POS = [];
@@ -47,41 +44,6 @@ let started = false;
 
 let freqs = [];
 
-let fullValueBuffer = [];
-let fullDateBuffer = [];
-
-
-// const decodeBits = () => {
-//     //dataArray[1000] = 255;
-//     //dataArray[900] = INTENSITY_THRESHOLD;
-
-//     let frequencyHeard = [];
-
-//     for (let i in dataArray) {
-//         if (dataArray[i] > INTENSITY_THRESHOLD) {
-//             frequencyHeard.push(freqs[i]);
-//         }
-//     }
-
-//     let bitArray = [];
-
-//     for (let i of frequencyHeard) {
-//         for (let j = 0; j < FREQUENCY_BUCKETS.length; j++) {
-//             if (bitArray.includes(FREQUENCY_BUCKETS[j])) continue;
-//             if (Math.abs(i - FREQUENCY_BUCKETS[j]) < FREQUENCY_TOLERANCE) {
-//                 bitArray.push(FREQUENCY_BUCKETS[j]);
-//             }
-//         }
-//     }
-
-//     let finalInt = 0;
-//     for (let i of bitArray) {
-//         finalInt += 2 ** (7 - FREQUENCY_BUCKETS.indexOf(i));
-//         //finalInt += frequencyMap[i]
-//     }
-
-//     return finalInt;
-// };
 
 const avgDataArray = (start, end) => {
     let avg = 0;
@@ -92,26 +54,6 @@ const avgDataArray = (start, end) => {
 }
 
 const decodeBits = () => {
-    // consider freq between 3k and 8k
-    // get avg volume
-    // print?
-
-    // get average volume within 5 bars
-    // get average volume within 20 bars
-    // let finalInt = 0;
-
-    // for (let i = 0; i < 8; i++) {
-    //     let nearAvg = avgDataArray(FREQUENCY_POS[i]-5, FREQUENCY_POS[i]+5);
-    //     let farAvg = avgDataArray(FREQUENCY_POS[i]-25, FREQUENCY_POS[i]+25);
-
-    //     // console.log(FREQUENCY_BUCKETS[i], nearAvg, farAvg);
-
-    //     if (nearAvg > 10 && nearAvg/farAvg > 2) {
-    //         // console.log(FREQUENCY_BUCKETS[i]);
-    //         finalInt += 2 ** (7 - i);
-    //     }
-    // }
-
     let freqStrengths = [];    
     for (let i = 0; i < FREQUENCY_BUCKETS.length; i++) {
         let nearAvg = avgDataArray(FREQUENCY_POS[i]-5, FREQUENCY_POS[i]+5);
@@ -359,38 +301,15 @@ const restart_state_machine = () => {
     state = 1;
     header_pos = 1;
 
-    fullValueBuffer = [];
-    fullDateBuffer = [];
 };
-
-//States:
-//1 : Fill up buffer, search if value is first header if full
-//2 : gobble any more first header values you see
-//3 : in header-reading mode: read a unit, see if is next header-value (and repeat till done). If fail, go to 2
-//4 : read message length
-//5 : read message payload
-
-let pastTime = new Date();
-
 
 
 const decode_message = (n) => {
     console.log(String.fromCharCode(n), n);
-    // fullValueBuffer.push(n);
-    // fullDateBuffer.push(new Date().getTime());
-    // if (fullValueBuffer.length == 1000) {
-    //     console.log(fullValueBuffer);
-    //     console.log(fullDateBuffer);
-    // }
-
-    //console.log(state, sample_buffer.join());
 
     // Add to buffer until its full
     sample_buffer.push(n);
     if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
-    //console.log(new Date() - pastTime);
-    //pastTime = new Date();
-
 
     unit = get_sample_buffer_value(sample_buffer);
     if (unit == -1) return;
@@ -415,85 +334,7 @@ const decode_message = (n) => {
         console.log("DONE");
     }
 
-
-
-    return;
-
-
-    if (state === 1) {
-        if (sample_buffer.length === UNIT_LENGTH) {
-            unit = get_sample_buffer_value(sample_buffer);
-            if (unit === HEADER[0]) {
-                state = 2;
-                counter = 0;
-            }
-        }
-    } else if (state === 2) {
-        if (n !== HEADER[0]) {
-            state = 3;
-            header_pos = 1;
-            sample_buffer = [];
-        }
-        if (counter === UNIT_LENGTH - HEADER_THRESHOLD) {
-            state = 3;
-        }
-    } else if (state === 3) {
-        if (sample_buffer.length === UNIT_LENGTH) {
-            unit = get_sample_buffer_value(sample_buffer);
-            if (unit === HEADER[header_pos]) {
-                header_pos++;
-                if (header_pos === HEADER.length) {
-                    counter = 0;
-                    state = 4;
-                }
-                sample_buffer = [];
-            } else {
-                state = 1;
-            }
-        }
-    } else if (state === 4) {
-        if (sample_buffer.length === UNIT_LENGTH) {
-            length = get_sample_buffer_value(sample_buffer, true);
-            state = 5;
-            counter = 0;
-            sample_buffer = [];
-        }
-    } else if (state === 5) {
-        if (sample_buffer.length === UNIT_LENGTH) {
-            unit_buffer.push(get_sample_buffer_value(sample_buffer, true));
-            sample_buffer = [];
-            counter++;
-            if (counter === length) {
-                console.log("MESSAGE RECEIVED:");
-                console.log("Length:");
-                console.log(length);
-                console.log("Payload:");
-                console.log(unit_buffer);
-                for (code of unit_buffer) {
-                    console.log(String.fromCharCode(code));
-                }
-                restart_state_machine();
-            }
-        }
-        restart_state_machine();
-    }
 };
-
-/* if (sample_buffer.length == UNIT_LENGTH) {
-        unit = get_sample_buffer_value(sample_buffer);
-        
-        if (unit !== -1) {
-            found_header = true;
-
-            unit_buffer.push(unit);
-            console.log("Got unit", unit);
-
-            // Clear buffer once we find a unit
-            sample_buffer = [];
-        } else {
-            if (found_header) throw new Error("wow idk was kinda expecting a value but ok");
-        }
-    }*/
 
 /**
  * Returns the most common number in the buffer if it is above the THRESHOLD.
