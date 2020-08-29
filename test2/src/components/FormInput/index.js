@@ -9,7 +9,7 @@ const FormInput = () => {
       type="text"
       className="text-field"
       onChange={(e) => setMsg(e.target.value)}
-      value={msg}
+      // value={msg}
       placeholder="Type here..."
     />
   );
