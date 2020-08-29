@@ -7,13 +7,27 @@ const HEADER_THRESHOLD = 38;
 const RELAXED_THRESHOLD = 38;
 
 // const FREQUENCY_BUCKETS = [4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400];
-const FREQUENCY_BUCKETS = [4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400, 5600, 5800, 6000, 6200, 6400];
+const FREQUENCY_BUCKETS = [
+  4000,
+  4200,
+  4400,
+  4600,
+  4800,
+  5000,
+  5200,
+  5400,
+  5600,
+  5800,
+  6000,
+  6200,
+  6400,
+];
 // const FREQUENCY_BUCKETS = [3000, 3200, 3400, 3600, 3800, 4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400];
 const INTENSITY_THRESHOLD = 100;
 
 const FREQUENCY_POS = [];
 
-const HEADER = [0,1];
+const HEADER = [0, 1];
 let message_length = -1;
 
 const SAMPLE_RATE = 16000;
@@ -44,296 +58,292 @@ let started = false;
 
 let freqs = [];
 
+let passMsg = () => {};
 
 const avgDataArray = (start, end) => {
-    let avg = 0;
-    for (let i = start; i <= end; i++) {
-        avg += dataArray[i];
-    }
-    return avg / (end - start + 1);
-}
+  let avg = 0;
+  for (let i = start; i <= end; i++) {
+    avg += dataArray[i];
+  }
+  return avg / (end - start + 1);
+};
 
 const decodeBits = () => {
-    let freqStrengths = [];    
-    for (let i = 0; i < FREQUENCY_BUCKETS.length; i++) {
-        let nearAvg = avgDataArray(FREQUENCY_POS[i]-5, FREQUENCY_POS[i]+5);
-        freqStrengths.push([i, nearAvg]);
-    }
-    freqStrengths.sort((a,b)=>{return b[1]-a[1]});
-    // console.log(freqStrengths[0][1], freqStrengths[1][1]);
+  let freqStrengths = [];
+  for (let i = 0; i < FREQUENCY_BUCKETS.length; i++) {
+    let nearAvg = avgDataArray(FREQUENCY_POS[i] - 5, FREQUENCY_POS[i] + 5);
+    freqStrengths.push([i, nearAvg]);
+  }
+  freqStrengths.sort((a, b) => {
+    return b[1] - a[1];
+  });
+  // console.log(freqStrengths[0][1], freqStrengths[1][1]);
 
-    let finalInt = 0;
-    for (let i = 0; i < 3; i++) {
-        finalInt += 2 ** (FREQUENCY_BUCKETS.length - 1 - freqStrengths[i][0]);
-    }
+  let finalInt = 0;
+  for (let i = 0; i < 3; i++) {
+    finalInt += 2 ** (FREQUENCY_BUCKETS.length - 1 - freqStrengths[i][0]);
+  }
 
-    finalInt = binary_to_int(finalInt);
+  finalInt = binary_to_int(finalInt);
 
-    return finalInt;
-}
+  return finalInt;
+};
 
 function num_1s(n) {
-    return n.toString(2).split('1').length-1;
+  return n.toString(2).split("1").length - 1;
 }
 
-
 function binary_to_int(n) {
-    let i = 0;
-    let num_valid_seen = 0;
-    while (i !== n) {
-        if (num_1s(i) === 3) {
-            num_valid_seen++;
-        }
-        i++;
+  let i = 0;
+  let num_valid_seen = 0;
+  while (i !== n) {
+    if (num_1s(i) === 3) {
+      num_valid_seen++;
     }
-    return num_valid_seen;
+    i++;
+  }
+  return num_valid_seen;
 }
 
 const recalculateFourier = () => {
-    analyserNode.getByteFrequencyData(dataArray);
-    dataArray.map((i) => i ** 2);
-    decode_message(decodeBits());
+  analyserNode.getByteFrequencyData(dataArray);
+  dataArray.map((i) => i ** 2);
+  decode_message(decodeBits());
 };
 
 const sketch = (p) => {
-    let screenWidth = window.innerWidth;
-    let xc = screenWidth / 2;
-    let yc = 250;
-    let r = screenWidth > 400 ? 64 : screenWidth / (2 * Math.PI);
+  let screenWidth = window.innerWidth;
+  let xc = screenWidth / 2;
+  let yc = 250;
+  let r = screenWidth > 400 ? 64 : screenWidth / (2 * Math.PI);
 
-    p.setup = () => {
-        p.createCanvas(screenWidth, screenWidth * 2.5);
-        p.frameRate(framerate);
-        p.loop();
-    };
+  p.setup = () => {
+    p.createCanvas(screenWidth, screenWidth * 2.5);
+    p.frameRate(framerate);
+    p.loop();
+  };
 
-    p.mouseClicked = () => {
-        if ((p.mouseX - xc) ** 2 + (p.mouseY - yc) ** 2 <= r ** 2) {
-            initAudio();
-        }
-    };
+  p.mouseClicked = () => {
+    if (((p.mouseX - xc) ** 2 + (p.mouseY - yc) ** 2 <= r ** 2) & !started) {
+      initAudio();
+    }
+  };
 
-    let t = 0;
+  p.myCustomRedrawAccordingToNewPropsHandler = (props) => {
+    passMsg = props.updateFunction;
+  };
 
-    p.draw = () => {
-        p.background("rgb(154, 209, 223)");
-        if (!started) {
-            p.fill("rgb(255, 255, 255)");
-            p.circle(xc, yc, 2 * r);
-            p.textSize(32);
-            p.fill("rgb(0, 0, 0)");
-            p.textAlign(p.CENTER, p.CENTER);
-            p.textFont("Amatic SC", 50);
-            p.text("start", xc, yc);
-            return;
-        }
-        let dlen = dataArray.length;
-        t -= 0.01;
-        timer++;
+  let t = 0;
 
-        //console.log(decodeBits());
-        //console.log('data', dataArray);
-        //let index = dataArray.indexOf(Math.max(...dataArray));
-        //console.log(freqs[index]);
+  p.draw = () => {
+    p.background("rgb(154, 209, 223)");
+    if (!started) {
+      p.fill("rgb(255, 255, 255)");
+      p.circle(xc, yc, 2 * r);
+      p.textSize(32);
+      p.fill("rgb(0, 0, 0)");
+      p.textAlign(p.CENTER, p.CENTER);
+      p.textFont("Amatic SC", 50);
+      p.text("start", xc, yc);
+      return;
+    }
+    let dlen = dataArray.length;
+    t -= 0.01;
+    timer++;
 
-        for (let i in dataArray) {
-            if (dataArray[i] > INTENSITY_THRESHOLD) {
-                // console.log(i);
-            }
-        }
+    //console.log(decodeBits());
+    //console.log('data', dataArray);
+    //let index = dataArray.indexOf(Math.max(...dataArray));
+    //console.log(freqs[index]);
 
-        // for (let i = 0; i < dlen; i++) {
-        //     p.rect(i * binWidth, 300 - dataArray[i] * 2, binWidth, dataArray[i] * 2);
-        // }
+    for (let i in dataArray) {
+      if (dataArray[i] > INTENSITY_THRESHOLD) {
+        // console.log(i);
+      }
+    }
 
-        p.strokeWeight(6);
-        let c1 = p.color(86, 151, 95);
-        let c2 = p.color(148, 69, 69);
-        // let c1 = p.color(0, 0, 0);
-        // let c2 = p.color(255, 255, 255);
+    // for (let i = 0; i < dlen; i++) {
+    //     p.rect(i * binWidth, 300 - dataArray[i] * 2, binWidth, dataArray[i] * 2);
+    // }
 
-        // for (let i = 2; i < dlen; i = i + 9) {
-        //     let h = i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen - i] * 0.75;
-        //     let theta = -Math.PI / 2 + (2 * i * Math.PI) / dlen;
-        //     p.stroke(p.lerpColor(c1, c2, Math.sin(2 * Math.PI * (t + i / dlen))));
-        //     //     p.stroke(`rgba(86, 151, 95,${1 - i / dlen})`);
-        //     // + Math.exp(-Math.sin(2 * Math.PI * t) ^ 2) * r * 0.1,
-        //     //     let off = Math.cos((6 * Math.PI * i * t) / dlen) * r * 0.1;
-        //     let off = 0;
-        //     p.line(
-        //         xc + r * Math.cos(theta) + off,
-        //         yc + r * Math.sin(theta) + off,
-        //         xc + (r + h / 2) * Math.cos(theta) + off,
-        //         yc + (r + h / 2) * Math.sin(theta) + off
-        //     );
-        // }
+    p.strokeWeight(6);
+    let c1 = p.color(86, 151, 95);
+    let c2 = p.color(148, 69, 69);
+    // let c1 = p.color(0, 0, 0);
+    // let c2 = p.color(255, 255, 255);
 
-        p.stroke("rgb(0,0,0)");
-        p.beginShape();
-        // p.noFill();
-        p.fill(p.lerpColor(c1, c2, Math.sin(Math.PI * t) ** 2));
-        for (let i = 0; i < dlen + 10; i = i + 8) {
-            let h =
-                i < dlen / 2
-                    ? dataArray[i] * 0.75
-                    : dataArray[dlen + 10 - i] * 0.75;
-            let theta = -Math.PI / 2 + (2 * i * Math.PI) / dlen;
-            //     p.stroke(`rgba(86, 151, 95,${1 - i / dlen})`);
-            // + Math.exp(-Math.sin(2 * Math.PI * t) ^ 2) * r * 0.1,
-            //     let off = Math.cos((6 * Math.PI * i * t) / dlen) * r * 0.1;
-            p.curveVertex(
-                xc + (r + h * 0.75) * Math.cos(theta),
-                yc + (r + h * 0.75) * Math.sin(theta)
-            );
-        }
-        p.endShape();
+    // for (let i = 2; i < dlen; i = i + 9) {
+    //     let h = i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen - i] * 0.75;
+    //     let theta = -Math.PI / 2 + (2 * i * Math.PI) / dlen;
+    //     p.stroke(p.lerpColor(c1, c2, Math.sin(2 * Math.PI * (t + i / dlen))));
+    //     //     p.stroke(`rgba(86, 151, 95,${1 - i / dlen})`);
+    //     // + Math.exp(-Math.sin(2 * Math.PI * t) ^ 2) * r * 0.1,
+    //     //     let off = Math.cos((6 * Math.PI * i * t) / dlen) * r * 0.1;
+    //     let off = 0;
+    //     p.line(
+    //         xc + r * Math.cos(theta) + off,
+    //         yc + r * Math.sin(theta) + off,
+    //         xc + (r + h / 2) * Math.cos(theta) + off,
+    //         yc + (r + h / 2) * Math.sin(theta) + off
+    //     );
+    // }
 
-        p.fill("rgb(0, 0, 0)");
-        // p.stroke("rgba(0,0,0)");
-        p.circle(xc, yc, 2 * r);
+    p.stroke("rgb(0,0,0)");
+    p.beginShape();
+    // p.noFill();
+    p.fill(p.lerpColor(c1, c2, Math.sin(Math.PI * t) ** 2));
+    for (let i = 0; i <= dlen + 9; i = i + 8) {
+      let h =
+        i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen + 8 - i] * 0.75;
+      let theta = -Math.PI / 2 + (2 * i * Math.PI) / dlen;
+      //     p.stroke(`rgba(86, 151, 95,${1 - i / dlen})`);
+      // + Math.exp(-Math.sin(2 * Math.PI * t) ^ 2) * r * 0.1,
+      //     let off = Math.cos((6 * Math.PI * i * t) / dlen) * r * 0.1;
+      p.curveVertex(
+        xc + (r + h * 0.75) * Math.cos(theta),
+        yc + (r + h * 0.75) * Math.sin(theta)
+      );
+    }
+    p.endShape();
 
-        //    if (timer % timerInterval === 0) {
-        //         let signal = decodeBits()
-        //         console.log(signal)
-        //         // uncomment to console log most prominent frequency
-        //         ///let index = dataArray.indexOf(Math.max(...dataArray))
-        //         // console.log(freqs[index])
-        //     }
-        binWidth = screenWidth / dataArray.length;
-        for (let i = 0; i < dataArray.length; i++) {
-            p.rect(
-                i * binWidth,
-                600 - dataArray[i] * 2,
-                binWidth,
-                dataArray[i] * 2
-            );
-        }
+    p.fill("rgb(0, 0, 0)");
+    // p.stroke("rgba(0,0,0)");
+    p.circle(xc, yc, 2 * r);
 
-        p.rect(0, 600 - 2*INTENSITY_THRESHOLD, screenWidth, 1);
-        // p.rect(0, 0, screenWidth, 1);
-    };
+    //    if (timer % timerInterval === 0) {
+    //         let signal = decodeBits()
+    //         console.log(signal)
+    //         // uncomment to console log most prominent frequency
+    //         ///let index = dataArray.indexOf(Math.max(...dataArray))
+    //         // console.log(freqs[index])
+    //     }
+    binWidth = screenWidth / dataArray.length;
+    for (let i = 0; i < dataArray.length; i++) {
+      p.rect(i * binWidth, 600 - dataArray[i] * 2, binWidth, dataArray[i] * 2);
+    }
+
+    p.rect(0, 600 - 2 * INTENSITY_THRESHOLD, screenWidth, 1);
+    // p.rect(0, 0, screenWidth, 1);
+  };
 };
 
 const onStream = (stream) => {
-    var inputPoint = audioContext.createGain();
-    // Create an AudioNode from the stream
-    var realAudioInput = audioContext.createMediaStreamSource(stream);
-    var audioInput = realAudioInput;
-    audioInput.connect(inputPoint);
-    inputPoint.connect(analyserNode);
+  var inputPoint = audioContext.createGain();
+  // Create an AudioNode from the stream
+  var realAudioInput = audioContext.createMediaStreamSource(stream);
+  var audioInput = realAudioInput;
+  audioInput.connect(inputPoint);
+  inputPoint.connect(analyserNode);
 
-    setInterval(recalculateFourier, Math.round(UNIT_TIME / UNIT_LENGTH));
+  setInterval(recalculateFourier, Math.round(UNIT_TIME / UNIT_LENGTH));
 
-    // start drawing
-    started = true;
+  // start drawing
+  started = true;
 };
 
 export const initAudio = () => {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyserNode = audioContext.createAnalyser();
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  analyserNode = audioContext.createAnalyser();
 
-    analyserNode.fftSize = 4096 / 2;
-    bufferLength = analyserNode.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
+  analyserNode.fftSize = 4096 / 2;
+  bufferLength = analyserNode.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
 
-    // sampleRate = audioContext.sampleRate;
-    // sampleRate = 16000;
-    sampleRate = SAMPLE_RATE;
-    bandWidth = sampleRate / bufferLength;
+  // sampleRate = audioContext.sampleRate;
+  // sampleRate = 16000;
+  sampleRate = SAMPLE_RATE;
+  bandWidth = sampleRate / bufferLength;
 
-    for (let i = 0; i < bufferLength; i++) {
-        freqs.push((i * bandWidth) / 2);
-    }
+  for (let i = 0; i < bufferLength; i++) {
+    freqs.push((i * bandWidth) / 2);
+  }
 
-    console.log(sampleRate, bufferLength);
-    for (let i = 0; i < FREQUENCY_BUCKETS.length; i++) {
-        FREQUENCY_POS.push(Math.round(FREQUENCY_BUCKETS[i]/(sampleRate/2) * bufferLength));
-    }
-    console.log(FREQUENCY_POS);
+  console.log(sampleRate, bufferLength);
+  for (let i = 0; i < FREQUENCY_BUCKETS.length; i++) {
+    FREQUENCY_POS.push(
+      Math.round((FREQUENCY_BUCKETS[i] / (sampleRate / 2)) * bufferLength)
+    );
+  }
+  console.log(FREQUENCY_POS);
 
+  if (!navigator.getUserMedia)
+    navigator.getUserMedia =
+      navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  if (!navigator.cancelAnimationFrame)
+    navigator.cancelAnimationFrame =
+      navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
+  if (!navigator.requestAnimationFrame)
+    navigator.requestAnimationFrame =
+      navigator.webkitRequestAnimationFrame ||
+      navigator.mozRequestAnimationFrame;
 
-    if (!navigator.getUserMedia)
-        navigator.getUserMedia =
-            navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-    if (!navigator.cancelAnimationFrame)
-        navigator.cancelAnimationFrame =
-            navigator.webkitCancelAnimationFrame ||
-            navigator.mozCancelAnimationFrame;
-    if (!navigator.requestAnimationFrame)
-        navigator.requestAnimationFrame =
-            navigator.webkitRequestAnimationFrame ||
-            navigator.mozRequestAnimationFrame;
-
-    navigator.mediaDevices
-        .getUserMedia({ audio: true, video: false })
-        .then((stream) => {
-            onStream(stream);
-        })
-        .catch((err) => {
-            alert(err);
-            console.log(err);
-        });
-    //navigator.getUserMedia(
-    //{
-    //audio: {
-    //mandatory: {
-    //googEchoCancellation: "false",
-    //googAutoGainControl: "false",
-    //googNoiseSuppression: "false",
-    //googHighpassFilter: "false",
-    //},
-    //optional: [],
-    //},
-    //optional: [],
-    //},
-    //
-    //onStream,
-    //function (e) {
-    //alert("Couldn't connect to an audio device");
-    //console.log(e);
-    //}
-    //);
+  navigator.mediaDevices
+    .getUserMedia({ audio: true, video: false })
+    .then((stream) => {
+      onStream(stream);
+    })
+    .catch((err) => {
+      alert(err);
+      console.log(err);
+    });
+  //navigator.getUserMedia(
+  //{
+  //audio: {
+  //mandatory: {
+  //googEchoCancellation: "false",
+  //googAutoGainControl: "false",
+  //googNoiseSuppression: "false",
+  //googHighpassFilter: "false",
+  //},
+  //optional: [],
+  //},
+  //optional: [],
+  //},
+  //
+  //onStream,
+  //function (e) {
+  //alert("Couldn't connect to an audio device");
+  //console.log(e);
+  //}
+  //);
 };
 
 const restart_state_machine = () => {
-    sample_buffer = [];
-    unit_buffer = [];
-    state = 1;
-    header_pos = 1;
-
+  sample_buffer = [];
+  unit_buffer = [];
+  state = 1;
+  header_pos = 1;
 };
 
-
 const decode_message = (n) => {
-    console.log(String.fromCharCode(n), n);
+  console.log(String.fromCharCode(n), n);
 
-    // Add to buffer until its full
-    sample_buffer.push(n);
-    if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
+  // Add to buffer until its full
+  sample_buffer.push(n);
+  if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
 
-    unit = get_sample_buffer_value(sample_buffer);
-    if (unit == -1) return;
-    sample_buffer = [];
+  unit = get_sample_buffer_value(sample_buffer);
+  if (unit == -1) return;
+  sample_buffer = [];
 
-    if (state < HEADER.length) {
-        if (unit == HEADER[state]) {
-            console.log("Found header no.", state);
-            state++;
-        } else {
-            state = 0;
-        }
-    } else if (state == HEADER.length) {
-        // get length
-        message_length = unit;
-        state++;
-        console.log("Found length of ", unit);
-    } else if (state <= HEADER.length + message_length) {
-        console.log("Found char", unit, String.fromCharCode(unit));
-        state++;
+  if (state < HEADER.length) {
+    if (unit == HEADER[state]) {
+      console.log("Found header no.", state);
+      state++;
     } else {
-        console.log("DONE");
+      state = 0;
     }
-
+  } else if (state == HEADER.length) {
+    // get length
+    message_length = unit;
+    state++;
+    console.log("Found length of ", unit);
+  } else if (state <= HEADER.length + message_length) {
+    console.log("Found char", unit, String.fromCharCode(unit));
+    state++;
+  } else {
+    console.log("DONE");
+  }
 };
 
 /**
@@ -341,31 +351,31 @@ const decode_message = (n) => {
  * Returns -1 if nothing above THRESHOLD
  */
 const get_sample_buffer_value = (buff, relaxed_thresh) => {
-    seen_values = {};
-    current_max = null;
-    for (value of buff) {
-        if (value in seen_values) {
-            seen_values[value] += 1;
-            if (current_max == null) {
-                current_max = value;
-            } else {
-                if (seen_values[value] > seen_values[current_max]) {
-                    current_max = value;
-                }
-            }
-        } else {
-            seen_values[value] = 1;
+  seen_values = {};
+  current_max = null;
+  for (value of buff) {
+    if (value in seen_values) {
+      seen_values[value] += 1;
+      if (current_max == null) {
+        current_max = value;
+      } else {
+        if (seen_values[value] > seen_values[current_max]) {
+          current_max = value;
         }
-    }
-
-    if (
-        seen_values[current_max] >=
-        (relaxed_thresh ? RELAXED_THRESHOLD : HEADER_THRESHOLD)
-    ) {
-        return current_max;
+      }
     } else {
-        return -1;
+      seen_values[value] = 1;
     }
+  }
+
+  if (
+    seen_values[current_max] >=
+    (relaxed_thresh ? RELAXED_THRESHOLD : HEADER_THRESHOLD)
+  ) {
+    return current_max;
+  } else {
+    return -1;
+  }
 };
 
 export default sketch;
