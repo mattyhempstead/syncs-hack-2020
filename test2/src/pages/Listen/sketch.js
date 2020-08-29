@@ -217,26 +217,29 @@ export const initAudio = () => {
       navigator.webkitRequestAnimationFrame ||
       navigator.mozRequestAnimationFrame;
 
-  navigator.getUserMedia(
-    {
-      audio: {
-        mandatory: {
-          googEchoCancellation: "false",
-          googAutoGainControl: "false",
-          googNoiseSuppression: "false",
-          googHighpassFilter: "false",
-        },
-        optional: [],
-      },
-      optional: [],
-    },
-
-    onStream,
-    function (e) {
-      alert("Couldn't connect to an audio device");
-      console.log(e);
-    }
-  );
+  navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(stream => {
+    onStream(stream)
+  }).catch(err => {alert(err)})
+  //navigator.getUserMedia(
+    //{
+      //audio: {
+        //mandatory: {
+          //googEchoCancellation: "false",
+          //googAutoGainControl: "false",
+          //googNoiseSuppression: "false",
+          //googHighpassFilter: "false",
+        //},
+        //optional: [],
+      //},
+      //optional: [],
+    //},
+//
+    //onStream,
+    //function (e) {
+      //alert("Couldn't connect to an audio device");
+      //console.log(e);
+    //}
+  //);
 };
 
 const restart_state_machine = () => {
