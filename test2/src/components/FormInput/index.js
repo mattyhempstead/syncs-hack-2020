@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./index.scss";
+import "./index.css";
 
 const FormInput = () => {
   const [msg, setMsg] = useState("type here...");

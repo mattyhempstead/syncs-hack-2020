@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./index.scss";
+import "./index.css";
 import sketch from "./sketch";
 import P5Wrapper from "react-p5-wrapper";
 
@@ -18,10 +18,7 @@ const Listen = () => {
     <div className="Listen">
       <div>
         <Link to="/" className="link">
-          <button
-            className="mdc-icon-button material-icons"
-            onClick={() => stop()}
-          >
+          <button className="back-button material-icons" onClick={() => stop()}>
             arrow_back
           </button>
         </Link>

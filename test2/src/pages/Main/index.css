@@ -1,0 +1,16 @@
+h1 {
+  font-size: 4rem;
+  font-weight: normal;
+}
+
+.Main {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: 1fr 1fr 1fr 1fr 3em;
+  align-items: center;
+  color: black;
+}
+
+p {
+  font-size: larger;
+}

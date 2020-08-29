@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import "./index.scss";
+import "./index.css";
 
 import FormInput from "../../components/FormInput";
 import Button from "../../components/Button";

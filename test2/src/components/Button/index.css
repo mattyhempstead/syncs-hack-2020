@@ -1,0 +1,15 @@
+button {
+  padding: 0.1em 0.5em 0.1em 0.5em;
+}
+
+.custom-button-red {
+  background-color: #f0acac;
+  color: #721d1d;
+  font-size: 2rem;
+}
+
+.custom-button-green {
+  background-color: #c7f0ac;
+  color: #3c473c;
+  font-size: 2rem;
+}

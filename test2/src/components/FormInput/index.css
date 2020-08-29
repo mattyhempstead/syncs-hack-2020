@@ -1,0 +1,16 @@
+textarea:focus,
+input:focus {
+  outline: none;
+}
+
+input {
+  width: 80vw;
+  height: 3em;
+  /* //   margin-bottom: 2em; */
+  color: black;
+  font-size: xx-large;
+  /* //   font-weight: ; */
+  text-align: center;
+  background-color: rgb(154, 209, 223);
+  border: none;
+}
