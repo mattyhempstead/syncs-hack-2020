@@ -14,17 +14,19 @@ const About = () => {
         <h1>About This</h1>
       </div>
       <div className="about-text">
-        <p>This app is revolutionising the way we communicate.</p>
+        <p>Quite Easy is exactly that - quite easy!</p>
         <p>
-          Why settle for boring transverse waves, when you can Amaze your
-          Friends using Rarefactions and Compressions!
+          Quite Easy codes or QE codes are a way of transmitting information
+          such as URLs or short pieces of texts to those around you.
         </p>
         <p>
-          Combining state of the art Quantum Fourier Transformations, with the
-          power of Mobile Computing, you now have the abilitiy to send{" "}
-          <b>any</b> link in the entire World Wide Web to your friends - For
-          Free!
+          Unlike our brother, the QR code, we don't require people to huddle
+          around a small piece of paper. Instead, we use something else: a
+          speaker and a microphone! QE Codes digitally encode your message into
+          a short audio clip, which is then received by your
+          friends/colleagues/family/ lawyers/enemies/dogs!
         </p>
+        <p> Easy!</p>
       </div>
     </div>
   );

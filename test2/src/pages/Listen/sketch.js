@@ -41,6 +41,8 @@ let started = false;
 
 let freqs = [];
 
+let passMsg = () => {};
+
 const decodeBits = () => {
     let frequencyHeard = [];
 
@@ -200,59 +202,68 @@ const onStream = (stream) => {
 };
 
 export const initAudio = () => {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    analyserNode = audioContext.createAnalyser();
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  analyserNode = audioContext.createAnalyser();
 
-    analyserNode.fftSize = 4096 / 2;
-    bufferLength = analyserNode.frequencyBinCount;
-    dataArray = new Uint8Array(bufferLength);
+  analyserNode.fftSize = 4096 / 2;
+  bufferLength = analyserNode.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
 
-    sampleRate = audioContext.sampleRate;
-    bandWidth = sampleRate / bufferLength;
+  sampleRate = audioContext.sampleRate;
+  bandWidth = sampleRate / bufferLength;
 
-    for (let i = 0; i < bufferLength; i++) {
-        freqs.push((i * bandWidth) / 2);
-    }
+  for (let i = 0; i < bufferLength; i++) {
+    freqs.push((i * bandWidth) / 2);
+  }
 
-    if (!navigator.getUserMedia)
-        navigator.getUserMedia =
-            navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-    if (!navigator.cancelAnimationFrame)
-        navigator.cancelAnimationFrame =
-            navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
-    if (!navigator.requestAnimationFrame)
-        navigator.requestAnimationFrame =
-            navigator.webkitRequestAnimationFrame ||
-            navigator.mozRequestAnimationFrame;
+  if (!navigator.getUserMedia)
+    navigator.getUserMedia =
+      navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  if (!navigator.cancelAnimationFrame)
+    navigator.cancelAnimationFrame =
+      navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
+  if (!navigator.requestAnimationFrame)
+    navigator.requestAnimationFrame =
+      navigator.webkitRequestAnimationFrame ||
+      navigator.mozRequestAnimationFrame;
 
-    navigator.getUserMedia(
-        {
-            audio: {
-                mandatory: {
-                    googEchoCancellation: "false",
-                    googAutoGainControl: "false",
-                    googNoiseSuppression: "false",
-                    googHighpassFilter: "false",
-                },
-                optional: [],
-            },
-            optional: [],
-        },
-
-        onStream,
-        function (e) {
-            alert("Couldn't connect to an audio device");
-            console.log(e);
-        }
-    );
+  navigator.mediaDevices
+    .getUserMedia({ audio: true, video: false })
+    .then((stream) => {
+      onStream(stream);
+    })
+    .catch((err) => {
+      alert(err);
+      console.log(err);
+    });
+  //navigator.getUserMedia(
+  //{
+  //audio: {
+  //mandatory: {
+  //googEchoCancellation: "false",
+  //googAutoGainControl: "false",
+  //googNoiseSuppression: "false",
+  //googHighpassFilter: "false",
+  //},
+  //optional: [],
+  //},
+  //optional: [],
+  //},
+  //
+  //onStream,
+  //function (e) {
+  //alert("Couldn't connect to an audio device");
+  //console.log(e);
+  //}
+  //);
 };
 
 const restart_state_machine = () => {
-    sample_buffer = [];
-    unit_buffer = [];
-    state = 1;
-    header_pos = 1;
-}
+  sample_buffer = [];
+  unit_buffer = [];
+  state = 1;
+  header_pos = 1;
+};
 
 //States:
 //1 : Fill up buffer, search if value is first header if full
@@ -326,7 +337,9 @@ const decode_message = n => {
                         restart_state_machine();
                 }
         }
+        restart_state_machine();
     }
+}
 
  /* if (sample_buffer.length == UNIT_LENGTH) {
         unit = get_sample_buffer_value(sample_buffer);
@@ -343,7 +356,6 @@ const decode_message = n => {
             if (found_header) throw new Error("wow idk was kinda expecting a value but ok");
         }
     }*/
-}
 
 
 
@@ -378,5 +390,3 @@ const get_sample_buffer_value = (buff, relaxed_thresh) => {
 }
 
 export default sketch;
-
-

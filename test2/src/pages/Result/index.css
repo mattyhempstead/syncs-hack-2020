@@ -1,4 +1,4 @@
-.About {
+.Result {
   display: grid;
   margin-top: 2em;
   height: 100vh;
@@ -23,16 +23,10 @@
   grid-row-start: 1;
 }
 
-.about-text {
+.redir-text {
   font-size: xx-large;
   grid-column-start: 1;
   grid-column-end: 4;
   grid-row-start: 2;
   padding: 1em 2em 0 2em;
-}
-
-@media only screen and (min-width: 600px) {
-  .about-text p {
-    font-size: 2.5rem;
-  }
 }
