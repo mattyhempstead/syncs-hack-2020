@@ -288,14 +288,33 @@ const get_current_second = () => {
 //2 - reading length
 //3 - reading raw data
 
-let pastSecond = get_current_second();
+let pastSecond = new Date();
 
 const decode_message = n => {
-    if (get_current_second() !== pastSecond) {
+    if (new Date() - pastSecond >= 1000) {
         let value = get_sample_buffer_value(sample_buffer);
-        console.log(value, sample_buffer)
+        console.log(state, value, sample_buffer, new Date())
+        pastSecond = new Date();
 
-        if (state === 1 && value === HEADER[0]) {
+        if (state === 1) {
+            let i = 0;
+            let num_seen = 0;
+            while (num_seen < 3 && i < sample_buffer.length) {
+                if (sample_buffer[i] === 136) {
+                    num_seen++;
+                } else {
+                    num_seen = 0;
+                }
+                i++;
+            }
+            i -= 3;
+            if (num_seen === 3) {
+                console.log("Detected header starting in index " + i);
+                state = 4;
+                pastSecond.setMilliseconds(sample_time_buffer[i].getMilliseconds());
+            }
+        } else if (state === 4) {
+            //Just discard it as it was past one
             state = 2;
         } else if (state === 2) {
             length = value;
@@ -317,13 +336,14 @@ const decode_message = n => {
             }
         }
         sample_buffer = [];
-        pastSecond = get_current_second();
+        sample_time_buffer = [];
     }
 
 
     let milli = new Date() % 1000;
-    if (300 < milli && milli < 900) {
+    if (state===1 || (300 < milli && milli < 900)) {
         sample_buffer.push(n);
+        sample_time_buffer.push(new Date());
     }
 }
 

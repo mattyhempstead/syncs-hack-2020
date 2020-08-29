@@ -83,6 +83,7 @@ function encode(txt) {
     console.log(lenPayloadBin);
     var encodedArray = [
         "10001000",
+        "00000000",
 //        "01000100",
 //        "00100100",
 //        "00010001",
