@@ -1,12 +1,8 @@
 import binascii
 
-
-
 text = "https://www.google.com/"
 binary_conversion = bin(int.from_bytes(text.encode(), 'big'))
 binary_conversion = binary_conversion[2:]
-
-
 
 for count,i in enumerate(binary_conversion):
     time = 0.5
