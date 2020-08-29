@@ -304,7 +304,7 @@ const decode_message = (n) => {
             header_pos = 1;
             sample_buffer = [];
         }
-        if (counter === (UNIT_LENGTH - HEADER_THRESHOLD) / 2) {
+        if (counter === UNIT_LENGTH - HEADER_THRESHOLD) {
             state = 3;
         }
     } else if (state === 3) {
