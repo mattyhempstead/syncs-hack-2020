@@ -55,7 +55,7 @@ function init() {
 
 function runTones(encodedArray, gainNodes) {
     console.log(encodedArray);
-    var playStartTime = audioCtx.currentTime;
+    var playStartTime = audioCtx.currentTime + 1 - (new Date() % 1000)/1000;
     for (let i = 0; i < encodedArray.length; i++) {
         let startTime = playStartTime + TONE_DURATION * i;
         for (let j = 0; j < 8; j++) {

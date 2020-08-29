@@ -3,7 +3,7 @@ var analyserNode;
 
 const UNIT_TIME = 1000;
 const UNIT_LENGTH = 60;
-const HEADER_THRESHOLD = Math.round(0.50*UNIT_TIME);
+const HEADER_THRESHOLD = 0.66;
 //const HEADER = [0b10101010, 0b01010101, 0b10101010, 0b01010101];
 const HEADER = [0b10001000];
 
@@ -279,84 +279,30 @@ const restart_state_machine = () => {
     header_pos = 1;
 };
 
+const get_current_second = () => {
+    return Math.floor(new Date()/1000);
+}
+
 //States:
-//1 : Fill up buffer, search if value is first header if full
-//2 : gobble any more first header values you see
-//3 : in header-reading mode: read a unit, see if is next header-value (and repeat till done). If fail, go to 2
-//4 : read message length
-//5 : read message payload
+//1 - no signal detected
+//2 - reading length
+//3 - reading raw data
 
-let pastTime = new Date();
+let pastSecond = get_current_second();
 
-const decode_message = (n) => {
-    // Add to buffer until its full
-    sample_buffer.push(n);
-    sample_time_buffer.push(new Date() - pastTime);
-    buf_timelength += sample_time_buffer[sample_time_buffer.length - 1];
-    pastTime = new Date();
-    if (buf_timelength >= UNIT_TIME) {
-        buf_timelength -= sample_time_buffer[0];
-        sample_buffer.shift();
-        sample_time_buffer.shift();
-    }
-    console.log(state, sample_buffer.join());
-    //console.log(new Date() - pastTime);
+const decode_message = n => {
+    if (get_current_second() !== pastSecond) {
+        let value = get_sample_buffer_value(sample_buffer);
+        console.log(value, sample_buffer)
 
-    if (state === 1) {
-        if (buf_timelength >= UNIT_TIME) {
-            unit = get_sample_buffer_value(sample_buffer, sample_time_buffer);
-            if (unit === HEADER[0]) {
-                state = 2;
-                counter = 0;
-            }
-        }
-    } else if (state === 2) {
-        counter++;
-        if (counter === (5*UNIT_LENGTH*HEADER_THRESHOLD)/(UNIT_TIME*12)) {
-            state = 4;
-            counter = 0;
-            sample_buffer = [];
-            sample_time_buffer = [];
-            buf_timelength = 0;
-        }
-    } else if (state === 3) {
-        if (buf_timelength >= UNIT_TIME) {
-            unit = get_sample_buffer_value(sample_buffer, sample_time_buffer);
-            if (unit === HEADER[header_pos]) {
-                header_pos++;
-                if (header_pos === HEADER.length) {
-                    counter = 0;
-                    state = 4;
-                }
-                sample_buffer = [];
-                sample_time_buffer = [];
-                buf_timelength = 0;
-            } else {
-                state = 1;
-            }
-        }
-    } else if (state === 4) {
-        if (buf_timelength >= UNIT_TIME) {
-            length = get_sample_buffer_value(sample_buffer, sample_time_buffer);
-            console.log("Length");
-            console.log(length)
-            state = 5;
-            counter = 0;
-            sample_buffer = [];
-            sample_time_buffer = [];
-            buf_timelength = 0;
-            if (length < 0) {
-                state = 2;
-            }
-        }
-    } else if (state === 5) {
-        if (buf_timelength >= UNIT_TIME) {
-            unit_buffer.push(get_sample_buffer_value(sample_buffer, sample_time_buffer));
-            sample_buffer = [];
-            sample_time_buffer = []
-            buf_timelength = 0;
-            counter++;
-            if (counter === length) {
+        if (state === 1 && value === HEADER[0]) {
+            state = 2;
+        } else if (state === 2) {
+            length = value;
+            state = 3;
+        } else if (state === 3) {
+            unit_buffer.push(value);
+            if (unit_buffer.length === length) {
                 console.log("MESSAGE RECEIVED:");
                 console.log("Length:");
                 console.log(length);
@@ -365,57 +311,50 @@ const decode_message = (n) => {
                 for (code of unit_buffer) {
                     console.log(String.fromCharCode(code));
                 }
-                restart_state_machine();
+                state = 1;
+                sample_buffer = [];
+                unit_buffer = [];
             }
         }
+        sample_buffer = [];
+        pastSecond = get_current_second();
     }
-};
 
-/* if (sample_buffer.length == UNIT_LENGTH) {
-        unit = get_sample_buffer_value(sample_buffer);
-        
-        if (unit !== -1) {
-            found_header = true;
 
-            unit_buffer.push(unit);
-            console.log("Got unit", unit);
+    let milli = new Date() % 1000;
+    if (300 < milli && milli < 900) {
+        sample_buffer.push(n);
+    }
+}
 
-            // Clear buffer once we find a unit
-            sample_buffer = [];
-        } else {
-            if (found_header) throw new Error("wow idk was kinda expecting a value but ok");
-        }
-    }*/
 
 /**
  * Returns the most common number in the buffer if it is above the THRESHOLD.
  * Returns -1 if nothing above THRESHOLD
  */
-const get_sample_buffer_value = (buff, time_buff) => {
-    seen_values = {};
+const get_sample_buffer_value = (buff) => {
+    seen_values = {}
     current_max = null;
-    for (let index in buff) {
-        if (buff[index] in seen_values) {
-            seen_values[buff[index]] += time_buff[index];
+    for (value of buff) {
+        if (value in seen_values) {
+            seen_values[value] += 1;
             if (current_max == null) {
-                current_max = buff[index];
+                current_max = value;
             } else {
-                if (seen_values[buff[index]] > seen_values[current_max]) {
+                if (seen_values[value] > seen_values[current_max]) {
                     current_max = value;
                 }
             }
         } else {
-            seen_values[buff[index]] = 1;
+            seen_values[value] = 1
         }
     }
 
-    console.log(seen_values[current_max]);
-    if (seen_values[current_max] >= HEADER_THRESHOLD) {
-        //console.log(seen_values[current_max]);
+    if (seen_values[current_max] >= HEADER_THRESHOLD*buff.length) {
         return current_max;
     } else {
         return -1;
     }
-};
+}
 
 export default sketch;
