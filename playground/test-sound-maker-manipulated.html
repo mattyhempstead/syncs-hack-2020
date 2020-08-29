@@ -91,9 +91,12 @@ function togglE_plaY() {
 
 function freQ_halF() {
         oscillator.frequency.setValueAtTime(document.getElementById("freq").value/2, audioCtx.currentTime + 0.5);
-        oscillator.frequency.setValueAtTime(document.getElementById("freq").value, audioCtx.currentTime + 1.0);
+        oscillator.frequency.setValueAtTime(document.getElementById("freq").value, audioCtx.currentTime + 2.0);
+        oscillator.frequency.setValueAtTime(document.getElementById("freq").value/2, audioCtx.currentTime + 2.0);
+        oscillator.frequency.setValueAtTime(document.getElementById("freq").value*2, audioCtx.currentTime + 2.0);
         oscillator.frequency.setValueAtTime(document.getElementById("freq").value/2, audioCtx.currentTime + 1.1);
         oscillator.frequency.setValueAtTime(document.getElementById("freq").value, audioCtx.currentTime + 1.11);
+        oscillator.frequency.setValueAtTime(document.getElementById("freq").value, audioCtx.currentTime + 3.0);
 }
 
 </script>
