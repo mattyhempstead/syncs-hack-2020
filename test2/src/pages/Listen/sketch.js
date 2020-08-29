@@ -11,19 +11,15 @@ var dataArray;
 let binWidth;
 let timer = 0;
 let framerate = 60;
-let sampleRate = audioContext.sampleRate;
+let sampleRate;
+let bandWidth;
+
 // interval at which to log data (divide by frame rate to get seconds)
 let timerInterval = 60;
 // intensity at which a frequency is considered relevant
 let started = false;
 
 let freqs = [];
-
-let bandWidth = sampleRate / bufferLength;
-
-for (let i = 0; i < bufferLength; i++) {
-  freqs.push((i * bandWidth) / 2);
-}
 
 const decodeBits = () => {
   let frequencyHeard = [];
@@ -60,8 +56,6 @@ const sketch = (p) => {
     p.createCanvas(screenWidth, screenWidth * 2.5);
     p.frameRate(framerate);
     p.loop();
-
-    binWidth = screenWidth / dataArray.length;
   };
 
   let t = 0;
@@ -145,64 +139,71 @@ const sketch = (p) => {
     //     ///let index = dataArray.indexOf(Math.max(...dataArray))
     //     // console.log(freqs[index])
     //   }
-
-    p.fill("black");
-
+    binWidth = screenWidth / dataArray.length;
     for (let i = 0; i < dataArray.length; i++) {
       p.rect(i * binWidth, 600 - dataArray[i] * 2, binWidth, dataArray[i] * 2);
     }
   };
+};
 
-  const onStream = (stream) => {
-    var inputPoint = audioContext.createGain();
-    // Create an AudioNode from the stream
-    var realAudioInput = audioContext.createMediaStreamSource(stream);
-    var audioInput = realAudioInput;
-    audioInput.connect(inputPoint);
-    inputPoint.connect(analyserNode);
+const onStream = (stream) => {
+  var inputPoint = audioContext.createGain();
+  // Create an AudioNode from the stream
+  var realAudioInput = audioContext.createMediaStreamSource(stream);
+  var audioInput = realAudioInput;
+  audioInput.connect(inputPoint);
+  inputPoint.connect(analyserNode);
 
-    // start drawing
-    started = true;
-  };
+  // start drawing
+  started = true;
+};
 
-  // all the stupid browser compatability stuff
-  //    this is the part i yoinked from somewhere online
-  const initAudio = () => {
-    if (!navigator.getUserMedia)
-      navigator.getUserMedia =
-        navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-    if (!navigator.cancelAnimationFrame)
-      navigator.cancelAnimationFrame =
-        navigator.webkitCancelAnimationFrame ||
-        navigator.mozCancelAnimationFrame;
-    if (!navigator.requestAnimationFrame)
-      navigator.requestAnimationFrame =
-        navigator.webkitRequestAnimationFrame ||
-        navigator.mozRequestAnimationFrame;
+export const initAudio = () => {
+  audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  analyserNode = audioContext.createAnalyser();
 
-    navigator.getUserMedia(
-      {
-        audio: {
-          mandatory: {
-            googEchoCancellation: "false",
-            googAutoGainControl: "false",
-            googNoiseSuppression: "false",
-            googHighpassFilter: "false",
-          },
-          optional: [],
+  analyserNode.fftSize = 4096 / 2;
+  bufferLength = analyserNode.frequencyBinCount;
+  dataArray = new Uint8Array(bufferLength);
+
+  sampleRate = audioContext.sampleRate;
+  bandWidth = sampleRate / bufferLength;
+
+  for (let i = 0; i < bufferLength; i++) {
+    freqs.push((i * bandWidth) / 2);
+  }
+
+  if (!navigator.getUserMedia)
+    navigator.getUserMedia =
+      navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  if (!navigator.cancelAnimationFrame)
+    navigator.cancelAnimationFrame =
+      navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
+  if (!navigator.requestAnimationFrame)
+    navigator.requestAnimationFrame =
+      navigator.webkitRequestAnimationFrame ||
+      navigator.mozRequestAnimationFrame;
+
+  navigator.getUserMedia(
+    {
+      audio: {
+        mandatory: {
+          googEchoCancellation: "false",
+          googAutoGainControl: "false",
+          googNoiseSuppression: "false",
+          googHighpassFilter: "false",
         },
         optional: [],
       },
+      optional: [],
+    },
 
-      onStream,
-      function (e) {
-        alert("Couldn't connect to an audio device");
-        console.log(e);
-      }
-    );
-  };
-
-  initAudio();
+    onStream,
+    function (e) {
+      alert("Couldn't connect to an audio device");
+      console.log(e);
+    }
+  );
 };
 
 export default sketch;
