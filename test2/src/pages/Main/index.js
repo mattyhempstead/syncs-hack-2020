@@ -5,6 +5,7 @@ import "./index.css";
 import FormInput from "../../components/FormInput";
 import Button from "../../components/Button";
 import { initAudio } from "../Listen/sketch";
+import { play } from "./play";
 
 const Main = () => {
   const [formMsg, setFormMsg] = useState("");
@@ -12,9 +13,10 @@ const Main = () => {
     setFormMsg(formMsg);
   }, []);
 
-  const play = () => {
+  const playButton = () => {
     if (formMsg !== "") {
       console.log(formMsg);
+      play(formMsg);
     }
   };
 
@@ -24,13 +26,13 @@ const Main = () => {
       <div>
         <h1> 1. send </h1>
         <div>
-          <FormInput handleForm={handleForm} onEnter={(e) => play()} />
+          <FormInput handleForm={handleForm} onEnter={(e) => playButton()} />
         </div>
         <Button
           className="play-button"
           message="play"
           icon="play_arrow"
-          onClick={(e) => play()}
+          onClick={(e) => playButton()}
           color="red"
         />
       </div>
