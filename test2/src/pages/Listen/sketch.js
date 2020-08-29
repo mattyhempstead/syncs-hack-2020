@@ -3,8 +3,7 @@ var analyserNode;
 
 const UNIT_TIME = 1000;
 const UNIT_LENGTH = 60;
-const HEADER_THRESHOLD = 40;
-const RELAXED_THRESHOLD = 40;
+const HEADER_THRESHOLD = Math.round(0.75*UNIT_TIME);
 //const HEADER = [0b10101010, 0b01010101, 0b10101010, 0b01010101];
 const HEADER = [0b10001000, 0b01000100, 0b00100010, 0b00010001];
 
@@ -23,6 +22,7 @@ let sampleRate;
 let bandWidth;
 
 let sample_buffer = [];
+let sample_time_buffer = [];
 let unit_buffer = [];
 let state = 1;
 let header_pos = 1;
@@ -285,14 +285,16 @@ let pastTime = new Date();
 const decode_message = (n) => {
     // Add to buffer until its full
     sample_buffer.push(n);
+    sample_time_buffer.push(new Date() - pastTime);
+    pastTime = new Date();
     if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
+    if (sample_time_buffer.length > UNIT_LENGTH) sample_time_buffer.shift();
     console.log(state, sample_buffer.join());
     //console.log(new Date() - pastTime);
-    //pastTime = new Date();
 
     if (state === 1) {
         if (sample_buffer.length === UNIT_LENGTH) {
-            unit = get_sample_buffer_value(sample_buffer);
+            unit = get_sample_buffer_value(sample_buffer, sample_time_buffer);
             if (unit === HEADER[0]) {
                 state = 2;
                 counter = 0;
@@ -303,13 +305,14 @@ const decode_message = (n) => {
             state = 3;
             header_pos = 1;
             sample_buffer = [];
+            sample_time_buffer = [];
         }
         if (counter === UNIT_LENGTH - HEADER_THRESHOLD) {
             state = 3;
         }
     } else if (state === 3) {
         if (sample_buffer.length === UNIT_LENGTH) {
-            unit = get_sample_buffer_value(sample_buffer);
+            unit = get_sample_buffer_value(sample_buffer, sample_time_buffer);
             if (unit === HEADER[header_pos]) {
                 header_pos++;
                 if (header_pos === HEADER.length) {
@@ -317,21 +320,24 @@ const decode_message = (n) => {
                     state = 4;
                 }
                 sample_buffer = [];
+                sample_time_buffer = [];
             } else {
                 state = 1;
             }
         }
     } else if (state === 4) {
         if (sample_buffer.length === UNIT_LENGTH) {
-            length = get_sample_buffer_value(sample_buffer, true);
+            length = get_sample_buffer_value(sample_buffer, sample_time_buffer);
             state = 5;
             counter = 0;
             sample_buffer = [];
+            sample_time_buffer = [];
         }
     } else if (state === 5) {
         if (sample_buffer.length === UNIT_LENGTH) {
-            unit_buffer.push(get_sample_buffer_value(sample_buffer, true));
+            unit_buffer.push(get_sample_buffer_value(sample_buffer, sample_time_buffer));
             sample_buffer = [];
+            sample_time_buffer = []
             counter++;
             if (counter === length) {
                 console.log("MESSAGE RECEIVED:");
@@ -369,28 +375,26 @@ const decode_message = (n) => {
  * Returns the most common number in the buffer if it is above the THRESHOLD.
  * Returns -1 if nothing above THRESHOLD
  */
-const get_sample_buffer_value = (buff, relaxed_thresh) => {
+const get_sample_buffer_value = (buff, time_buff) => {
     seen_values = {};
     current_max = null;
-    for (value of buff) {
-        if (value in seen_values) {
-            seen_values[value] += 1;
+    for (let index in buff) {
+        if (buff[index] in seen_values) {
+            seen_values[buff[index]] += time_buff[index];
             if (current_max == null) {
-                current_max = value;
+                current_max = buff[index];
             } else {
-                if (seen_values[value] > seen_values[current_max]) {
+                if (seen_values[buff[index]] > seen_values[current_max]) {
                     current_max = value;
                 }
             }
         } else {
-            seen_values[value] = 1;
+            seen_values[buff[index]] = 1;
         }
     }
 
-    if (
-        seen_values[current_max] >=
-        (relaxed_thresh ? RELAXED_THRESHOLD : HEADER_THRESHOLD)
-    ) {
+    if (seen_values[current_max] >= HEADER_THRESHOLD) {
+        console.log(seen_values[current_max]);
         return current_max;
     } else {
         return -1;
