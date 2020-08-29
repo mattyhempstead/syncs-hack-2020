@@ -7,8 +7,8 @@ const HEADER_THRESHOLD = 0.66;
 //const HEADER = [0b10101010, 0b01010101, 0b10101010, 0b01010101];
 const HEADER = [0b10001000];
 
-//const FREQUENCY_BUCKETS = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500];
-const FREQUENCY_BUCKETS = [4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750];
+const FREQUENCY_BUCKETS = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500];
+//const FREQUENCY_BUCKETS = [4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750];
 const FREQUENCY_TOLERANCE = 15;
 const INTENSITY_THRESHOLD = 150;
 
@@ -288,13 +288,13 @@ const get_current_second = () => {
 //2 - reading length
 //3 - reading raw data
 
-let pastSecond = new Date();
+let startSecond = new Date();
+let frame_counter = 1;
 
 const decode_message = n => {
-    if (new Date() - pastSecond >= 1000) {
+    if (new Date() - startSecond >= frame_counter*1000) {
         let value = get_sample_buffer_value(sample_buffer);
-        console.log(state, value, sample_buffer, new Date())
-        pastSecond = new Date();
+        console.log(state, value, sample_buffer)
 
         if (state === 1) {
             let i = 0;
@@ -311,7 +311,9 @@ const decode_message = n => {
             if (num_seen === 3) {
                 console.log("Detected header starting in index " + i);
                 state = 4;
-                pastSecond.setMilliseconds(sample_time_buffer[i].getMilliseconds());
+                //pastSecond.setMilliseconds(sample_time_buffer[i].getMilliseconds());
+                startSecond = new Date();
+                frame_counter = 0;
             }
         } else if (state === 4) {
             //Just discard it as it was past one
@@ -337,6 +339,7 @@ const decode_message = n => {
         }
         sample_buffer = [];
         sample_time_buffer = [];
+        frame_counter++;
     }
 
 
