@@ -219,7 +219,7 @@ export const initAudio = () => {
 
   navigator.mediaDevices.getUserMedia({audio: true, video: false}).then(stream => {
     onStream(stream)
-  }).catch(err => {alert(err)})
+  }).catch(err => {alert(err);console.log(err)})
   //navigator.getUserMedia(
     //{
       //audio: {
