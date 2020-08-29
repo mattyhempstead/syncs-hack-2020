@@ -62,7 +62,7 @@ const decodeBits = () => {
 
   let finalInt = 0;
   for (let i of bitArray) {
-    finalInt += 2 ** FREQUENCY_BUCKETS.indexOf(i);
+    finalInt += 2 ** (7 - FREQUENCY_BUCKETS.indexOf(i));
     //finalInt += frequencyMap[i]
   }
 
@@ -111,7 +111,8 @@ const sketch = (p) => {
     timer++;
     analyserNode.getByteFrequencyData(dataArray);
     dataArray.map((i) => i ** 2);
-
+    decode_message(decodeBits())
+    
     //console.log(decodeBits());
     //console.log('data', dataArray);
     //let index = dataArray.indexOf(Math.max(...dataArray));
@@ -263,7 +264,7 @@ const decode_message = (n) => {
   // Add to buffer until its full
   sample_buffer.push(n);
   if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
-  console.log(state, sample_buffer);
+  console.log(state, sample_buffer.join());
 
   if (state === 1) {
     if (sample_buffer.length === UNIT_LENGTH) {
