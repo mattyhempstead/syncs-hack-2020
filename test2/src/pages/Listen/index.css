@@ -14,6 +14,10 @@
   font-size: xx-large;
 }
 
+.back-button:hover {
+  cursor: pointer;
+}
+
 .title {
   grid-column-start: 2;
   grid-row-start: 1;

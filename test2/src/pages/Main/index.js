@@ -4,6 +4,7 @@ import "./index.css";
 
 import FormInput from "../../components/FormInput";
 import Button from "../../components/Button";
+import { initAudio } from "../Listen/sketch";
 
 const Main = () => {
   const [formMsg, setFormMsg] = useState("");
@@ -12,7 +13,7 @@ const Main = () => {
   }, []);
 
   const play = () => {
-    if (formMsg != "") {
+    if (formMsg !== "") {
       console.log(formMsg);
     }
   };
@@ -42,6 +43,7 @@ const Main = () => {
             message="listen"
             icon="mic"
             color="green"
+            onClick={() => initAudio()}
           />
         </Link>
       </div>

@@ -80,54 +80,54 @@ const sketch = (p) => {
     }
   };
 
-  const onStream = (stream) => {
-    var inputPoint = audioContext.createGain();
-    // Create an AudioNode from the stream
-    var realAudioInput = audioContext.createMediaStreamSource(stream);
-    var audioInput = realAudioInput;
-    audioInput.connect(inputPoint);
-    inputPoint.connect(analyserNode);
-
-    // start drawing
-    started = true;
-  };
-
   // all the stupid browser compatability stuff
   //    this is the part i yoinked from somewhere online
-  const initAudio = () => {
-    if (!navigator.getUserMedia)
-      navigator.getUserMedia =
-        navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-    if (!navigator.cancelAnimationFrame)
-      navigator.cancelAnimationFrame =
-        navigator.webkitCancelAnimationFrame ||
-        navigator.mozCancelAnimationFrame;
-    if (!navigator.requestAnimationFrame)
-      navigator.requestAnimationFrame =
-        navigator.webkitRequestAnimationFrame ||
-        navigator.mozRequestAnimationFrame;
 
-    navigator.getUserMedia(
-      {
-        audio: {
-          mandatory: {
-            googEchoCancellation: "false",
-            googAutoGainControl: "false",
-            googNoiseSuppression: "false",
-            googHighpassFilter: "false",
-          },
-          optional: [],
+  // initAudio();
+};
+
+const onStream = (stream) => {
+  var inputPoint = audioContext.createGain();
+  // Create an AudioNode from the stream
+  var realAudioInput = audioContext.createMediaStreamSource(stream);
+  var audioInput = realAudioInput;
+  audioInput.connect(inputPoint);
+  inputPoint.connect(analyserNode);
+
+  // start drawing
+  started = true;
+};
+
+export const initAudio = () => {
+  if (!navigator.getUserMedia)
+    navigator.getUserMedia =
+      navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  if (!navigator.cancelAnimationFrame)
+    navigator.cancelAnimationFrame =
+      navigator.webkitCancelAnimationFrame || navigator.mozCancelAnimationFrame;
+  if (!navigator.requestAnimationFrame)
+    navigator.requestAnimationFrame =
+      navigator.webkitRequestAnimationFrame ||
+      navigator.mozRequestAnimationFrame;
+
+  navigator.getUserMedia(
+    {
+      audio: {
+        mandatory: {
+          googEchoCancellation: "false",
+          googAutoGainControl: "false",
+          googNoiseSuppression: "false",
+          googHighpassFilter: "false",
         },
+        optional: [],
       },
-      onStream,
-      function (e) {
-        alert("Couldn't connect to an audio device");
-        console.log(e);
-      }
-    );
-  };
-
-  initAudio();
+    },
+    onStream,
+    function (e) {
+      alert("Couldn't connect to an audio device");
+      console.log(e);
+    }
+  );
 };
 
 export default sketch;
