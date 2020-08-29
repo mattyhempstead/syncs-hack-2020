@@ -8,7 +8,7 @@ const TONE_DURATION = 1.0; // Seconds for each 8-bit tone to be played
 // const FREQUENCIES = [110, 220, 330, 440, 550, 660, 770, 880]; //Frequencies for each bit
 //const FREQUENCIES = [210, 212, 214, 216, 218, 220, 222, 224]; //Frequencies for each bit
 //const FREQUENCIES = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500]
-const FREQUENCIES = [4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750]
+const FREQUENCIES = [4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750];
 const TONE_VOL = 0.2;
 
 var audioCtx;
@@ -79,9 +79,15 @@ function runTones(encodedArray, gainNodes) {
 function encode(txt) {
     var encodedTxt = new TextEncoder("utf-8").encode(txt);
     var lenPayload = encodedTxt.length;
-    var lenPayloadBin = lenPayload.toString(2).padStart(8,"0"); //TODO: Add another byte to support longer strings.
-    console.log(lenPayloadBin)
-    var encodedArray = ['10001000','01000100','00100100','00010001', lenPayloadBin];
+    var lenPayloadBin = lenPayload.toString(2).padStart(8, "0"); //TODO: Add another byte to support longer strings.
+    console.log(lenPayloadBin);
+    var encodedArray = [
+        "10001000",
+        "01000100",
+        "00100100",
+        "00010001",
+        lenPayloadBin,
+    ];
     for (let i = 0; i < encodedTxt.length; i++) {
         var binEnc = encodedTxt[i].toString(2).padStart(8, "0");
         encodedArray.push(binEnc);
