@@ -4,8 +4,9 @@
     https://developer.mozilla.org/en-US/docs/Web/API/OscillatorNode/frequency
 */
 
-const TONE_DURATION = 0.1; // Seconds for each 8-bit tone to be played
-const FREQUENCIES = [110, 220, 330, 440, 550, 660, 770, 880]; //Frequencies for each bit
+const TONE_DURATION = 0.05; // Seconds for each 8-bit tone to be played
+// const FREQUENCIES = [110, 220, 330, 440, 550, 660, 770, 880]; //Frequencies for each bit
+const FREQUENCIES = [210, 212, 214, 216, 218, 220, 222, 224]; //Frequencies for each bit
 const TONE_VOL = 3;
 
 var audioCtx;
@@ -58,7 +59,7 @@ function runTones(encodedArray, gainNodes) {
     let startTime = playStartTime + TONE_DURATION * i;
     for (let j = 0; j < 8; j++) {
       var freqStatus = encodedArray[i][j];
-      if (freqStatus == "1") {
+      if (freqStatus === "1") {
         gainNodes[j].gain.setValueAtTime(TONE_VOL, startTime);
       } else {
         gainNodes[j].gain.setValueAtTime(0, startTime); //TODO: change to desired volume level when activated

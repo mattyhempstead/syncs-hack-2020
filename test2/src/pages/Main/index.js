@@ -52,11 +52,7 @@ const Main = () => {
       <div></div>
       <div>
         <p>
-          About{" "}
-          <Link to="/about">
-            <a href="#">this</a>
-          </Link>
-          . About{" "}
+          About <Link to="/about">this</Link>. About{" "}
           <a href="https://github.com/mattyhempstead/syncs-hack-2020/tree/master">
             us
           </a>
