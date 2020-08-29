@@ -56,7 +56,6 @@ function runTones(encodedArray, gainNodes) {
     playStartTime = audioCtx.currentTime;
     for (let i = 0; i < encodedArray.length; i++) { 
         startTime = playStartTime + TONE_DURATION*i;
-        console.log(startTime)
         for (let j = 0; j < 8; j++) {
             freqStatus = encodedArray[i][j];
             if (freqStatus == '1') {
@@ -69,7 +68,6 @@ function runTones(encodedArray, gainNodes) {
     }
     //Set all oscillators to 0 after playing full tone
     for (let k = 0; k < 8; k++) {
-        console.log("AAAAA")
         gainNodes[k].gain.setValueAtTime(0, playStartTime + TONE_DURATION*encodedArray.length); 
     }
 }
@@ -90,4 +88,4 @@ function play(stringToEncode) {
     runTones(encode(stringToEncode), gainNodes);
 }
 
-play("CORY")
+play("BEN")
