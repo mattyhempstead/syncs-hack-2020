@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./index.css";
 
 const FormInput = () => {
-  const [msg, setMsg] = useState("type here...");
+  const [msg, setMsg] = useState("");
 
   return (
     <input
@@ -10,6 +10,7 @@ const FormInput = () => {
       className="text-field"
       onChange={(e) => setMsg(e.target.value)}
       value={msg}
+      placeholder="Type here..."
     />
   );
 };

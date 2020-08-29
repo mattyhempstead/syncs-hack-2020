@@ -17,7 +17,7 @@ let started = false;
 const sketch = (p) => {
   let screenWidth = window.innerWidth;
   //   let screenWidth = 250;
-  //   let binWidth = screenWidth / dataArray.length;
+  //   let binWidth = screenWidth / dlen;
 
   p.setup = () => {
     p.createCanvas(screenWidth, screenWidth * 2.5);
@@ -40,7 +40,8 @@ const sketch = (p) => {
       }
     }
 
-    // for (let i = 0; i < dataArray.length; i++) {
+    let dlen = dataArray.length;
+    // for (let i = 0; i < dlen; i++) {
     //   p.rect(i * binWidth, 300 - dataArray[i] * 2, binWidth, dataArray[i] * 2);
     // }
 
@@ -54,21 +55,19 @@ const sketch = (p) => {
     let yc = 250;
     let r = screenWidth > 400 ? 64 : screenWidth / (2 * Math.PI);
 
-    for (let i = 2; i < dataArray.length; i = i + 9) {
-      let h = dataArray[i] * 0.75;
-      let theta = -Math.PI / 2 + (2 * i * Math.PI) / dataArray.length;
-      p.stroke(
-        p.lerpColor(c1, c2, Math.sin(2 * Math.PI * (t + i / dataArray.length)))
-      );
-      //   p.stroke(`rgba(86, 151, 95,${1 - i / dataArray.length})`);
+    for (let i = 2; i < dlen; i = i + 9) {
+      let h = i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen - i] * 0.75;
+      let theta = -Math.PI / 2 + (2 * i * Math.PI) / dlen;
+      p.stroke(p.lerpColor(c1, c2, Math.sin(2 * Math.PI * (t + i / dlen))));
+      //   p.stroke(`rgba(86, 151, 95,${1 - i / dlen})`);
       // + Math.exp(-Math.sin(2 * Math.PI * t) ^ 2) * r * 0.1,
-      //   let off = Math.cos((6 * Math.PI * i * t) / dataArray.length) * r * 0.1;
+      //   let off = Math.cos((6 * Math.PI * i * t) / dlen) * r * 0.1;
       let off = 0;
       p.line(
         xc + r * Math.cos(theta) + off,
         yc + r * Math.sin(theta) + off,
-        xc + (r + h) * Math.cos(theta) + off,
-        yc + (r + h) * Math.sin(theta) + off
+        xc + (r + h / 2) * Math.cos(theta) + off,
+        yc + (r + h / 2) * Math.sin(theta) + off
       );
     }
 
