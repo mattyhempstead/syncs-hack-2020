@@ -76,7 +76,11 @@ function runTones(encodedArray, gainNodes) {
 
 function encode(txt) {
   var encodedTxt = new TextEncoder("utf-8").encode(txt);
-  var encodedArray = [];
+  var lenPayload = encodedTxt.length;
+  var lenPayloadBin = lenPayload.toString(2).padStart(8,"0");
+  console.log(lenPayloadBin)
+  var encodedArray = ['10101010','01010101','10101010','01010101', lenPayloadBin];
+  encodedArray.push(lenPayloadBin);
   for (let i = 0; i < encodedTxt.length; i++) {
     var binEnc = encodedTxt[i].toString(2).padStart(8, "0");
     encodedArray.push(binEnc);
