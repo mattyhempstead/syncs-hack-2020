@@ -30,3 +30,9 @@
   grid-row-start: 2;
   padding: 1em 2em 0 2em;
 }
+
+@media only screen and (min-width: 600px) {
+  .about-text p {
+    font-size: 2.5rem;
+  }
+}
