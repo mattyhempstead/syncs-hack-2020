@@ -1,30 +1,31 @@
 import React from "react";
 import "./index.scss";
 
-import { MDCTextField } from "@material/textfield";
-// const textField = new MDCTextField(document.querySelector(".mdc-text-field"));
+import FormInput from "../../components/FormInput";
+import Button from "../../components/Button";
 
 const Main = () => {
   return (
     <div className="Main">
+      <div></div>
       <div>
-        <label className="mdc-text-field mdc-text-field--outlined">
-          <input
-            type="text"
-            className="mdc-text-field__input"
-            aria-labelledby="my-label-id"
-          />
-          <span className="mdc-notched-outline">
-            <span className="mdc-notched-outline__leading"></span>
-            <span className="mdc-notched-outline__notch"></span>
-            <span className="mdc-notched-outline__trailing"></span>
-          </span>
-        </label>
+        <h1> send: </h1>
+        <div>
+          <FormInput />
+        </div>
+        <Button message="play" icon="star" />
       </div>
       <div>
-        <p> Test </p>
+        <h1> receive: </h1>
+        <br></br>
+        <Button message="listen" icon="speaker" />
       </div>
       <div></div>
+      <div>
+        <p>
+          Created by <a href="https://www.benbraham.com">leprachauns</a>.
+        </p>
+      </div>
     </div>
   );
 };

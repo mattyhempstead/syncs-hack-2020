@@ -5,18 +5,32 @@
 
 @include textfield.core-styles;
 
-p {
+h1 {
   font-size: xx-large;
+  font-weight: normal;
 }
 
 .Main {
   display: grid;
   height: 100vh;
-  grid-template-rows: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr 1fr 3em;
   align-items: center;
   color: black;
 }
 
-.mdc-text-field {
-  width: 50vw;
+textarea:focus,
+input:focus {
+  outline: none;
+}
+
+input {
+  width: 80vw;
+  height: 3em;
+  //   margin-bottom: 2em;
+  color: black;
+  font-size: xx-large;
+  //   font-weight: ;
+  text-align: center;
+  background-color: rgb(154, 209, 223);
+  border: none;
 }
