@@ -1,22 +1,29 @@
-import React from "react";
+import React, { useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import "./index.css";
 
 import FormInput from "../../components/FormInput";
 import Button from "../../components/Button";
 
-const play = () => {
-  console.log("play");
-};
-
 const Main = () => {
+  const [formMsg, setFormMsg] = useState("");
+  const handleForm = useCallback((formMsg) => {
+    setFormMsg(formMsg);
+  }, []);
+
+  const play = () => {
+    if (formMsg != "") {
+      console.log(formMsg);
+    }
+  };
+
   return (
     <div className="Main">
       <div></div>
       <div>
         <h1> 1. send </h1>
         <div>
-          <FormInput />
+          <FormInput handleForm={handleForm} onEnter={(e) => play()} />
         </div>
         <Button
           className="play-button"
