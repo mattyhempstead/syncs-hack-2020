@@ -52,9 +52,13 @@ const Main = () => {
       <div></div>
       <div>
         <p>
-          Created by{" "}
+          About{" "}
+          <Link to="/about">
+            <a href="#">this</a>
+          </Link>
+          . About{" "}
           <a href="https://github.com/mattyhempstead/syncs-hack-2020/tree/master">
-            leprachauns
+            us
           </a>
           .
         </p>
