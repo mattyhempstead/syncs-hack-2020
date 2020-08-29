@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Link, Redirect } from "react-router-dom";
 import "./index.css";
-import sketch from "./sketch";
+import sketch, { stopAudio } from "./sketch";
 import P5Wrapper from "react-p5-wrapper";
 
 const stop = () => {
+  stopAudio();
   // console.log("stop");
 };
 

@@ -227,11 +227,15 @@ const sketch = (p) => {
   };
 };
 
+var inputPoint;
+var realAudioInput;
+var audioInput;
+
 const onStream = (stream) => {
-  var inputPoint = audioContext.createGain();
+  inputPoint = audioContext.createGain();
   // Create an AudioNode from the stream
-  var realAudioInput = audioContext.createMediaStreamSource(stream);
-  var audioInput = realAudioInput;
+  realAudioInput = audioContext.createMediaStreamSource(stream);
+  audioInput = realAudioInput;
   audioInput.connect(inputPoint);
   inputPoint.connect(analyserNode);
 
@@ -239,6 +243,10 @@ const onStream = (stream) => {
 
   // start drawing
   started = true;
+};
+
+export const stopAudio = () => {
+  // started = false;
 };
 
 export const initAudio = () => {
