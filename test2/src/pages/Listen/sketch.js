@@ -1,3 +1,9 @@
+
+const FREQUENCY_BUCKETS = [1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000];
+const FREQUENCY_TOLERANCE = 15;
+const INTENSITY_THRESHOLD = 150;
+
+
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 const analyserNode = audioContext.createAnalyser();
 
@@ -6,14 +12,13 @@ analyserNode.fftSize = 4096 / 2;
 const bufferLength = analyserNode.frequencyBinCount;
 const dataArray = new Uint8Array(bufferLength);
 
-let binWidth
+let binWidth;
 let timer = 0;
 let framerate = 60;
 let sampleRate = audioContext.sampleRate;
 // interval at which to log data (divide by frame rate to get seconds)
 let timerInterval = 60;
 // intensity at which a frequency is considered relevant
-let intensityThreshold = 150;
 let started = false;
 
 let freqs = [];
@@ -24,25 +29,12 @@ for (let i = 0; i < bufferLength; i++) {
   freqs.push(i*bandWidth/2)
 }
 
-let frequencyBuckets = [110, 220, 330, 440, 550, 660, 770, 880];
-let frequencyMap = {
-  110: 1,
-  220: 2,
-  330: 4,
-  440: 8,
-  550: 16,
-  660: 32,
-  770: 64,
-  880: 128
-}
-
-let frequencyTolerance = 15;
 
 const decodeBits = () => {
   let frequencyHeard = [];
 
   for (let i in dataArray) {
-    if (dataArray[i] > intensityThreshold) {
+    if (dataArray[i] > INTENSITY_THRESHOLD) {
       frequencyHeard.push(freqs[i]);
     }
   }
@@ -50,17 +42,18 @@ const decodeBits = () => {
   let bitArray = [];
 
   for (let i of frequencyHeard) {
-    for (let j = 0; j < frequencyBuckets.length; j++) {
-      if (bitArray.includes(frequencyBuckets[j])) continue;
-      if (Math.abs(i - frequencyBuckets[j]) < frequencyTolerance) {
-        bitArray.push(frequencyBuckets[j]);
+    for (let j = 0; j < FREQUENCY_BUCKETS.length; j++) {
+      if (bitArray.includes(FREQUENCY_BUCKETS[j])) continue;
+      if (Math.abs(i - FREQUENCY_BUCKETS[j]) < FREQUENCY_TOLERANCE) {
+        bitArray.push(FREQUENCY_BUCKETS[j]);
       }
     }
   }
 
   let finalInt = 0;
   for (let i of bitArray) {
-    finalInt += frequencyMap[i]
+    finalInt += 2**FREQUENCY_BUCKETS.indexOf(i);
+    //finalInt += frequencyMap[i]
   }
 
   return finalInt;
@@ -73,7 +66,7 @@ const sketch = p => {
     p.frameRate(framerate);
     p.loop();
 
-    binWidth = screenWidth / dataArray.length
+    binWidth = screenWidth / dataArray.length;
   };
 
   let t = 0;
@@ -84,10 +77,15 @@ const sketch = p => {
     if (!started) return;
     timer++;
     analyserNode.getByteFrequencyData(dataArray);
-    dataArray.map(i => i**2)
+    dataArray.map(i => i**2);
+
+    // console.log(decodeBits());
+    //console.log('data', dataArray);
+    //let index = dataArray.indexOf(Math.max(...dataArray));
+    //console.log(freqs[index]);
 
     for (let i in dataArray) {
-      if (dataArray[i] > intensityThreshold) {
+      if (dataArray[i] > INTENSITY_THRESHOLD) {
         // console.log(i);
       }
     }
@@ -123,17 +121,19 @@ const sketch = p => {
       );
     }
 
+    p.line(0, 150, screenWidth, 150);
+
     p.fill('rgba(86, 151, 95, 0)');
     p.stroke('rgba(0,0,0,0)');
     p.circle(xc, yc, 2 * r + 5);
 
-    if (timer % timerInterval === 0) {
-      let signal = decodeBits()
-      console.log(signal)
-      // uncomment to console log most prominent frequency
-      // let index = dataArray.indexOf(Math.max(...dataArray))
-      // console.log(freqs[index])
-    }
+  //  if (timer % timerInterval === 0) {
+  //     let signal = decodeBits()
+  //     console.log(signal)
+  //     // uncomment to console log most prominent frequency
+  //     ///let index = dataArray.indexOf(Math.max(...dataArray))
+  //     // console.log(freqs[index])
+  //   }
 
     p.fill('black')
 
