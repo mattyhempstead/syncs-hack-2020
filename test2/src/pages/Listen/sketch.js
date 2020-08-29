@@ -329,9 +329,12 @@ const decode_message = n => {
                 console.log(length);
                 console.log("Payload:");
                 console.log(unit_buffer);
+                let message = ""
                 for (code of unit_buffer) {
-                    console.log(String.fromCharCode(code));
+                    message = message + String.fromCharCode(code);
                 }
+                console.log(message)
+                passMsg(message);
                 state = 1;
                 sample_buffer = [];
                 unit_buffer = [];
