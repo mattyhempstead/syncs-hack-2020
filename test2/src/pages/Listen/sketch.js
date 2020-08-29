@@ -60,7 +60,7 @@ const decodeBits = () => {
 
   let finalInt = 0;
   for (let i of bitArray) {
-    finalInt += 2 ** FREQUENCY_BUCKETS.indexOf(i);
+    finalInt += 2 ** (7 - FREQUENCY_BUCKETS.indexOf(i));
     //finalInt += frequencyMap[i]
   }
 
@@ -257,7 +257,7 @@ const decode_message = n => {
   // Add to buffer until its full
   sample_buffer.push(n);
   if (sample_buffer.length > UNIT_LENGTH) sample_buffer.shift();
-  console.log(state, sample_buffer);
+  console.log(state, sample_buffer.join());
 
   if (state === 1) {
     if (sample_buffer.length === UNIT_LENGTH) {
