@@ -1,0 +1,12 @@
+@use "@material/theme" with (
+  $primary: #b95252,
+  $on-primary: #eb5e6a
+);
+
+@use "@material/button";
+
+@include button.core-styles;
+
+.custom-button {
+  @include button.ink-color(#000000);
+}

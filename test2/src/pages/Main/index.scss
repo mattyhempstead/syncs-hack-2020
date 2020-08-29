@@ -1,0 +1,36 @@
+@use "@material/floating-label/mdc-floating-label";
+@use "@material/line-ripple/mdc-line-ripple";
+@use "@material/notched-outline/mdc-notched-outline";
+@use "@material/textfield";
+
+@include textfield.core-styles;
+
+h1 {
+  font-size: xx-large;
+  font-weight: normal;
+}
+
+.Main {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: 1fr 1fr 1fr 1fr 3em;
+  align-items: center;
+  color: black;
+}
+
+textarea:focus,
+input:focus {
+  outline: none;
+}
+
+input {
+  width: 80vw;
+  height: 3em;
+  //   margin-bottom: 2em;
+  color: black;
+  font-size: xx-large;
+  //   font-weight: ;
+  text-align: center;
+  background-color: rgb(154, 209, 223);
+  border: none;
+}
