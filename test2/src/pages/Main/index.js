@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import "./index.scss";
 
 import FormInput from "../../components/FormInput";
@@ -13,12 +14,22 @@ const Main = () => {
         <div>
           <FormInput />
         </div>
-        <Button message="play" icon="star" />
+        <Button
+          message="play"
+          icon="play_arrow"
+          onClick={(e) => console.log("hi")}
+        />
       </div>
       <div>
         <h1> receive: </h1>
         <br></br>
-        <Button message="listen" icon="speaker" />
+        <Link to="/listen" class="link">
+          <Button
+            message="listen"
+            icon="mic"
+            onClick={(e) => console.log("ho")}
+          />
+        </Link>
       </div>
       <div></div>
       <div>

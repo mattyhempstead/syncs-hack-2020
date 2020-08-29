@@ -1,0 +1,12 @@
+@use "@material/icon-button";
+
+@include icon-button.core-styles;
+
+.Listen {
+  display: grid;
+  height: 100vh;
+  grid-template-rows: 5em 1fr;
+  grid-template-columns: 5em 1fr;
+  align-items: center;
+  color: black;
+}

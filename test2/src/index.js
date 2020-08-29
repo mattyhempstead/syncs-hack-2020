@@ -1,19 +1,20 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { BrowserRouter } from "react-router-dom";
+
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import { MDCRipple } from "@material/ripple";
-import { MDCTextField } from "@material/textfield";
 
 ReactDOM.render(
-  <React.StrictMode>
+  <BrowserRouter>
     <App />
-  </React.StrictMode>,
+  </BrowserRouter>,
   document.getElementById("root")
 );
 
-const buttonRipple = new MDCRipple(document.querySelector(".mdc-button"));
+// const buttonRipple = new MDCRipple(document.querySelector(".mdc-button"));
 
 // const textField = new MDCTextField(document.querySelector(".mdc-text-field"));
 
