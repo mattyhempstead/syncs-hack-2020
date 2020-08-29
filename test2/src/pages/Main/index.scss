@@ -2,11 +2,13 @@
 @use "@material/line-ripple/mdc-line-ripple";
 @use "@material/notched-outline/mdc-notched-outline";
 @use "@material/textfield";
+@use "@material/button";
 
+@include button.core-styles;
 @include textfield.core-styles;
 
 h1 {
-  font-size: xx-large;
+  font-size: 4rem;
   font-weight: normal;
 }
 
@@ -33,4 +35,8 @@ input {
   text-align: center;
   background-color: rgb(154, 209, 223);
   border: none;
+}
+
+p {
+  font-size: larger;
 }

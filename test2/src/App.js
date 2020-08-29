@@ -1,11 +1,11 @@
-import React from "react";
-import { Switch, Route } from "react-router-dom";
+import React, { useState } from "react";
+import { Switch, Route, Redirect } from "react-router-dom";
 import "./App.scss";
 
 import Main from "./pages/Main";
 import Listen from "./pages/Listen";
 
-const App = () => {
+const App = (props) => {
   return (
     <div className="App">
       <Switch>

@@ -20,7 +20,7 @@ import "./index.scss";
 // };
 
 const FormInput = () => {
-  const [msg, setMsg] = useState("www.google.com");
+  const [msg, setMsg] = useState("type here");
 
   return (
     <input

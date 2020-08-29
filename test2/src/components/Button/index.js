@@ -4,7 +4,7 @@ import "./index.scss";
 const Button = (props) => {
   return (
     <button
-      className="mdc-button mdc-button--outlined custom-button"
+      className={"mdc-button mdc-button--raised custom-button-" + props.color}
       onClick={props.onClick}
     >
       <div className="mdc-button__ripple"></div>
