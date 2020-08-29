@@ -77,7 +77,7 @@ function runTones(encodedArray, gainNodes) {
 function encode(txt) {
   var encodedTxt = new TextEncoder("utf-8").encode(txt);
   var lenPayload = encodedTxt.length;
-  var lenPayloadBin = lenPayload.toString(2).padStart(8,"0");
+  var lenPayloadBin = lenPayload.toString(2).padStart(8,"0"); //TODO: Add another byte to support longer strings.
   console.log(lenPayloadBin)
   var encodedArray = ['10101010','01010101','10101010','01010101', lenPayloadBin];
   encodedArray.push(lenPayloadBin);
