@@ -5,7 +5,6 @@ const FREQUENCY_BUCKETS = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500];
 const FREQUENCY_TOLERANCE = 15;
 const INTENSITY_THRESHOLD = 150;
 
-
 var bufferLength;
 var dataArray;
 
@@ -23,9 +22,8 @@ let freqs = [];
 let bandWidth = sampleRate / bufferLength;
 
 for (let i = 0; i < bufferLength; i++) {
-  freqs.push(i*bandWidth/2)
+  freqs.push((i * bandWidth) / 2);
 }
-
 
 const decodeBits = () => {
   let frequencyHeard = [];
@@ -49,14 +47,14 @@ const decodeBits = () => {
 
   let finalInt = 0;
   for (let i of bitArray) {
-    finalInt += 2**FREQUENCY_BUCKETS.indexOf(i);
+    finalInt += 2 ** FREQUENCY_BUCKETS.indexOf(i);
     //finalInt += frequencyMap[i]
   }
 
   return finalInt;
-}
+};
 
-const sketch = p => {
+const sketch = (p) => {
   let screenWidth = window.innerWidth;
   p.setup = () => {
     p.createCanvas(screenWidth, screenWidth * 2.5);
@@ -70,11 +68,11 @@ const sketch = p => {
 
   p.draw = () => {
     t -= 0.01;
-    p.background('rgb(154, 209, 223)');
+    p.background("rgb(154, 209, 223)");
     if (!started) return;
     timer++;
     analyserNode.getByteFrequencyData(dataArray);
-    dataArray.map(i => i**2);
+    dataArray.map((i) => i ** 2);
 
     console.log(decodeBits());
     //console.log('data', dataArray);
@@ -93,54 +91,69 @@ const sketch = p => {
     // }
 
     p.strokeWeight(6);
-    // let c1 = p.color(86, 151, 95);
-    // let c2 = p.color(148, 69, 69);
-    let c1 = p.color(0, 0, 0);
-    let c2 = p.color(255, 255, 255);
+    let c1 = p.color(86, 151, 95);
+    let c2 = p.color(148, 69, 69);
+    // let c1 = p.color(0, 0, 0);
+    // let c2 = p.color(255, 255, 255);
 
     let xc = screenWidth / 2;
     let yc = 250;
     let r = screenWidth > 400 ? 64 : screenWidth / (2 * Math.PI);
 
-    for (let i = 2; i < dlen; i = i + 9) {
-      let h = i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen - i] * 0.75;
+    // for (let i = 2; i < dlen; i = i + 9) {
+    //   let h = i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen - i] * 0.75;
+    //   let theta = -Math.PI / 2 + (2 * i * Math.PI) / dlen;
+    //   p.stroke(p.lerpColor(c1, c2, Math.sin(2 * Math.PI * (t + i / dlen))));
+    //   //   p.stroke(`rgba(86, 151, 95,${1 - i / dlen})`);
+    //   // + Math.exp(-Math.sin(2 * Math.PI * t) ^ 2) * r * 0.1,
+    //   //   let off = Math.cos((6 * Math.PI * i * t) / dlen) * r * 0.1;
+    //   let off = 0;
+    //   p.line(
+    //     xc + r * Math.cos(theta) + off,
+    //     yc + r * Math.sin(theta) + off,
+    //     xc + (r + h / 2) * Math.cos(theta) + off,
+    //     yc + (r + h / 2) * Math.sin(theta) + off
+    //   );
+    // }
+
+    p.stroke("rgb(0,0,0)");
+    p.beginShape();
+    // p.noFill();
+    p.fill(p.lerpColor(c1, c2, Math.sin(Math.PI * t) ** 2));
+    for (let i = 0; i < dlen + 10; i = i + 8) {
+      let h =
+        i < dlen / 2 ? dataArray[i] * 0.75 : dataArray[dlen + 10 - i] * 0.75;
       let theta = -Math.PI / 2 + (2 * i * Math.PI) / dlen;
-      p.stroke(p.lerpColor(c1, c2, Math.sin(2 * Math.PI * (t + i / dlen))));
       //   p.stroke(`rgba(86, 151, 95,${1 - i / dlen})`);
       // + Math.exp(-Math.sin(2 * Math.PI * t) ^ 2) * r * 0.1,
       //   let off = Math.cos((6 * Math.PI * i * t) / dlen) * r * 0.1;
-      let off = 0;
-      p.line(
-        xc + r * Math.cos(theta) + off,
-        yc + r * Math.sin(theta) + off,
-        xc + (r + h / 2) * Math.cos(theta) + off,
-        yc + (r + h / 2) * Math.sin(theta) + off
+      p.curveVertex(
+        xc + (r + h * 0.75) * Math.cos(theta),
+        yc + (r + h * 0.75) * Math.sin(theta)
       );
     }
+    p.endShape();
 
-    p.line(0, 150, screenWidth, 150);
+    p.fill("rgb(0, 0, 0)");
+    // p.stroke("rgba(0,0,0)");
+    p.circle(xc, yc, 2 * r);
 
-    p.fill('rgba(86, 151, 95, 0)');
-    p.stroke('rgba(0,0,0,0)');
-    p.circle(xc, yc, 2 * r + 5);
+    //  if (timer % timerInterval === 0) {
+    //     let signal = decodeBits()
+    //     console.log(signal)
+    //     // uncomment to console log most prominent frequency
+    //     ///let index = dataArray.indexOf(Math.max(...dataArray))
+    //     // console.log(freqs[index])
+    //   }
 
-  //  if (timer % timerInterval === 0) {
-  //     let signal = decodeBits()
-  //     console.log(signal)
-  //     // uncomment to console log most prominent frequency
-  //     ///let index = dataArray.indexOf(Math.max(...dataArray))
-  //     // console.log(freqs[index])
-  //   }
-
-    p.fill('black')
+    p.fill("black");
 
     for (let i = 0; i < dataArray.length; i++) {
       p.rect(i * binWidth, 600 - dataArray[i] * 2, binWidth, dataArray[i] * 2);
     }
-
   };
 
-  const onStream = stream => {
+  const onStream = (stream) => {
     var inputPoint = audioContext.createGain();
     // Create an AudioNode from the stream
     var realAudioInput = audioContext.createMediaStreamSource(stream);
@@ -171,10 +184,10 @@ const sketch = p => {
       {
         audio: {
           mandatory: {
-            googEchoCancellation: 'false',
-            googAutoGainControl: 'false',
-            googNoiseSuppression: 'false',
-            googHighpassFilter: 'false',
+            googEchoCancellation: "false",
+            googAutoGainControl: "false",
+            googNoiseSuppression: "false",
+            googHighpassFilter: "false",
           },
           optional: [],
         },
@@ -182,10 +195,10 @@ const sketch = p => {
       },
 
       onStream,
-      function(e) {
+      function (e) {
         alert("Couldn't connect to an audio device");
         console.log(e);
-      },
+      }
     );
   };
 
