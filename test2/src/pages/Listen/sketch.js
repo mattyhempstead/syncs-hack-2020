@@ -1,14 +1,13 @@
+var audioContext;
+var analyserNode;
+
 const FREQUENCY_BUCKETS = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500];
 const FREQUENCY_TOLERANCE = 15;
 const INTENSITY_THRESHOLD = 150;
 
-const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-const analyserNode = audioContext.createAnalyser();
 
-analyserNode.fftSize = 4096 / 2;
-
-const bufferLength = analyserNode.frequencyBinCount;
-const dataArray = new Uint8Array(bufferLength);
+var bufferLength;
+var dataArray;
 
 let binWidth;
 let timer = 0;
@@ -179,7 +178,9 @@ const sketch = p => {
           },
           optional: [],
         },
+        optional: [],
       },
+
       onStream,
       function(e) {
         alert("Couldn't connect to an audio device");
