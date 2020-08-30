@@ -14,7 +14,6 @@ const INTENSITY_THRESHOLD = 100;
 
 const FREQUENCY_POS = [];
 
-const HEADER = [0,1];
 let message_length = -1;
 
 const SAMPLE_RATE = 16000;
@@ -423,7 +422,7 @@ const decode_message = n => {
                     message = message + String.fromCharCode(code);
                 }
                 console.log(message)
-                passMsg(message);
+                //passMsg(message);
                 state = 1;
                 sample_buffer = [];
                 unit_buffer = [];
