@@ -7,12 +7,14 @@
 const TONE_DURATION = 1.0; // Seconds for each 8-bit tone to be played
 // const FREQUENCIES = [110, 220, 330, 440, 550, 660, 770, 880]; //Frequencies for each bit
 //const FREQUENCIES = [210, 212, 214, 216, 218, 220, 222, 224]; //Frequencies for each bit
-const FREQUENCIES = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500]
-//const FREQUENCIES = [4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750];
+//const FREQUENCIES = [4000, 4500, 5000, 5500, 6000, 6500, 7000, 7500]
+// const FREQUENCIES = [4000, 4250, 4500, 4750, 5000, 5250, 5500, 5750, 6000];
+const FREQUENCIES = [4000, 4200, 4400, 4600, 4800, 5000, 5200, 5400, 5600, 5800, 6000, 6200, 6400];
 const TONE_VOL = 0.2;
 
+const FREQUENCY_COUNT = 13;
+
 var audioCtx;
-var isPlaying = true;
 
 /*
         see https://github.com/mdn/violent-theremin/blob/gh-pages/scripts/app.js
@@ -36,7 +38,7 @@ function init() {
         splitter.connect(audioCtx.destination, i);
     }
 
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < FREQUENCY_COUNT; i++) {
         oscillators[i] = audioCtx.createOscillator();
         gainNodes[i] = audioCtx.createGain();
         oscillators[i].connect(gainNodes[i]);
@@ -58,7 +60,7 @@ function runTones(encodedArray, gainNodes) {
     var playStartTime = audioCtx.currentTime + 1 - (new Date() % 1000)/1000;
     for (let i = 0; i < encodedArray.length; i++) {
         let startTime = playStartTime + TONE_DURATION * i;
-        for (let j = 0; j < 8; j++) {
+        for (let j = 0; j < FREQUENCY_COUNT; j++) {
             var freqStatus = encodedArray[i][j];
             if (freqStatus === "1") {
                 gainNodes[j].gain.setValueAtTime(TONE_VOL, startTime);
@@ -68,7 +70,7 @@ function runTones(encodedArray, gainNodes) {
         }
     }
     //Set all oscillators to 0 after playing full tone
-    for (let k = 0; k < 8; k++) {
+    for (let k = 0; k < FREQUENCY_COUNT; k++) {
         gainNodes[k].gain.setValueAtTime(
             0,
             playStartTime + TONE_DURATION * encodedArray.length
@@ -76,10 +78,28 @@ function runTones(encodedArray, gainNodes) {
     }
 }
 
+function num_1s(n) {
+    return n.toString(2).split('1').length-1;
+}
+
+function int_to_binary(n) {
+    let num_valid_seen = 0;
+    let i = 0;
+    while (num_valid_seen <= n) {
+        if (num_1s(i) === 3) {
+            num_valid_seen++;
+        }
+        i++;
+    }
+    return (i-1).toString(2).padStart(FREQUENCY_COUNT, "0");
+}
+
+
 function encode(txt) {
     var encodedTxt = new TextEncoder("utf-8").encode(txt);
     var lenPayload = encodedTxt.length;
-    var lenPayloadBin = lenPayload.toString(2).padStart(8, "0"); //TODO: Add another byte to support longer strings.
+    // var lenPayloadBin = lenPayload.toString(2).padStart(FREQUENCY_COUNT, "0"); //TODO: Add another byte to support longer strings.
+    var lenPayloadBin = int_to_binary(lenPayload);
     console.log(lenPayloadBin);
     var encodedArray = [
         "10001000",
@@ -90,7 +110,8 @@ function encode(txt) {
         lenPayloadBin,
     ];
     for (let i = 0; i < encodedTxt.length; i++) {
-        var binEnc = encodedTxt[i].toString(2).padStart(8, "0");
+        // var binEnc = encodedTxt[i].toString(2).padStart(FREQUENCY_COUNT, "0");
+        var binEnc = int_to_binary(encodedTxt[i]);
         encodedArray.push(binEnc);
     }
     return encodedArray;
